@@ -1,0 +1,17 @@
+{
+  "name": "潮汐淨灘",
+  "short_name": "潮汐淨灘",
+  "description": "海浪回來之前，把沙灘清乾淨。海洋廢棄物分類小遊戲。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1f6e7a",
+  "theme_color": "#1f6e7a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
