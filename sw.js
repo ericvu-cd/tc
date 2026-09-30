@@ -1,5 +1,5 @@
 /* 潮汐淨灘 service worker：更新遊戲內容時，把版本號加 1 */
-const VERSION = 'tide-v1';
+const VERSION = 'tide-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 

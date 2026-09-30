@@ -206,6 +206,39 @@ svg{display:block;width:100%;height:100%;overflow:visible;}
 .dex-detail{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;}
 .dex-detail .art{width:96px;height:96px;}
 
+
+.item{z-index:2;}
+.item.frag{--iw:60px;--ia:38px;}
+.item.frag .tag{font-size:.66rem;}
+.item .badge{position:absolute;right:-7px;top:-7px;width:22px;height:22px;}
+.item.holding .art::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:4px solid var(--gold);animation:grip .55s linear forwards;}
+@keyframes grip{from{transform:scale(1.6);opacity:.15;}to{transform:scale(1);opacity:1;}}
+.item.armed .art::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px dashed var(--gold);}
+.item.cracking .art{animation:crack .16s infinite alternate;}
+.item.cracking .art::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M22 12l6 12-5 8 8 10-3 12M44 18l-6 10 6 8' fill='none' stroke='%232a2620' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;z-index:1;}
+@keyframes crack{from{transform:rotate(-4deg);}to{transform:rotate(4deg);}}
+.item.blown{transition:none;}
+.item.blown .art{animation:crack .22s infinite alternate;}
+.crab{position:absolute;width:86px;height:68px;transform:translate(-50%,-50%);z-index:4;background:none;border:0;padding:0;cursor:pointer;}
+.crab .flipper,.crab .inner{width:100%;height:100%;}
+.crab .inner{animation:crawl .3s ease-in-out infinite alternate;}
+.crab.target{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 8px #fff);}
+.gull-shadow{position:absolute;width:86px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(40,30,20,.62),rgba(40,30,20,.25) 70%,rgba(40,30,20,0));border:2px dashed rgba(42,38,32,.55);transform:translate(-50%,-50%);z-index:3;pointer-events:none;}
+.gull{position:absolute;width:96px;height:60px;z-index:7;pointer-events:none;transform:translate(-50%,-50%);}
+.wind-fx{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.8;
+  background:repeating-linear-gradient(160deg,transparent 0 52px,rgba(255,255,255,.55) 52px 54px,transparent 54px 110px);
+  animation:gust .5s linear infinite;}
+.wind-fx.left{background:repeating-linear-gradient(20deg,transparent 0 52px,rgba(255,255,255,.55) 52px 54px,transparent 54px 110px);animation-name:gustL;}
+@keyframes gust{from{background-position:0 0;}to{background-position:60px -110px;}}
+@keyframes gustL{from{background-position:0 0;}to{background-position:-60px -110px;}}
+.volunteer{position:absolute;width:50px;height:64px;z-index:5;pointer-events:none;transform:translate(-50%,-50%);transition:left .9s ease-in-out,top .9s ease-in-out;}
+.volunteer .bob{width:100%;height:100%;animation:crawl .25s ease-in-out infinite alternate;}
+.nest{position:absolute;width:84px;height:52px;transform:translate(-50%,-50%);z-index:1;pointer-events:none;}
+.hatch{position:absolute;width:34px;height:34px;z-index:4;pointer-events:none;transform:translate(-50%,-50%);}
+.hatch .wiggle{width:100%;height:100%;animation:crawl .22s ease-in-out infinite alternate;}
+.hatch.stuck{filter:drop-shadow(0 0 5px var(--coral));}
+.hatch.stuck .wiggle{animation:crack .12s infinite alternate;}
+
 @media (max-height:680px){
   #app{--iw:70px;--ia:50px;}
   .item .tag{font-size:.72rem;}
@@ -234,7 +267,7 @@ svg{display:block;width:100%;height:100%;overflow:visible;}
       <div class="rule"><div class="pic" id="rp3"></div><div><b>保護爬過的海龜</b>別讓塑膠袋、漁繩擋在牠的路上。</div></div>
       <div class="start-actions">
         <button class="btn primary" id="startBtn">開始淨灘</button>
-        <button class="btn" id="dexBtn">圖鑑 <span id="dexCount">0/70</span></button>
+        <button class="btn" id="dexBtn">圖鑑 <span id="dexCount">0/120</span></button>
       </div>
       <button class="btn install" id="installBtn" hidden>安裝到手機，離線也能玩</button>
       <p class="install-tip" id="iosTip" hidden>iPhone 可以點 Safari 下方的分享按鈕，選「加入主畫面」，離線也能玩。</p>
@@ -252,7 +285,7 @@ svg{display:block;width:100%;height:100%;overflow:visible;}
       </div>
       <div class="bars">
         <div class="bar" id="hpBar"><div class="lbl"><span>海洋健康</span><span id="hpNum">100</span></div><div class="track"><div class="fill" id="hpFill" style="width:100%"></div></div></div>
-        <div class="bar tide"><div class="lbl"><span>下一波浪</span><span id="tideNum"></span></div><div class="track"><div class="fill" id="tideFill" style="width:100%"></div></div></div>
+        <div class="bar tide"><div class="lbl"><span id="tideLbl">下一波浪</span><span id="tideNum"></span></div><div class="track"><div class="fill" id="tideFill" style="width:100%"></div></div></div>
       </div>
     </div>
     <div id="field">
@@ -600,6 +633,168 @@ const GLOBAL_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hi
 
 const iconSvg = (key) => `<svg viewBox="0 0 64 64" aria-hidden="true">${ICONS[key]||''}</svg>`;
 
+/* ============ 第二批 50 樣物品 ============ */
+Object.assign(ICONS, {
+/* 塑膠 */
+toothbrush: G(`<g transform="rotate(-38 32 32)"><rect x="6" y="30" width="40" height="7" rx="3.5" fill="#6dc0b8"/>
+  <rect x="42" y="29" width="16" height="9" rx="3" fill="#6dc0b8"/><rect x="43" y="21" width="14" height="8" rx="1" fill="#fbfaf5"/>
+  <path d="M46.5 21v8M50 21v8M53.5 21v8" stroke-width="1.3"/></g>`),
+strap: LINE('M8 44c6-22 30-24 34-8 3 12-14 16-18 6-5-12 12-24 32-18', '#f0c94a', 5) + `<path d="M8 44c6-22 30-24 34-8 3 12-14 16-18 6-5-12 12-24 32-18" fill="none" stroke="#d9a520" stroke-width="1.2" stroke-dasharray="1 3"/>`,
+flower_pot: G(`<path d="M14 23h36l-5 33c-.3 2-2 3-4 3H23c-2 0-3.7-1-4-3z" fill="#3b3a36"/><rect x="10" y="16" width="44" height="8" rx="2" fill="#4a4843"/>
+  <path d="M40 30l-3 7 4 4" fill="none" stroke="#8a857c" stroke-width="1.6"/>`),
+basket: G(`<path d="M17 25c0-16 30-16 30 0" fill="none" stroke-width="3.2"/><path d="M8 25h48l-5 30c-.3 2-2 3-4 3H17c-2 0-3.7-1-4-3z" fill="#e8534a"/>`)
+  + `<g fill="#b8352d">${[0,1,2,3,4,5].map(i=>`<rect x="${14+i*6.4}" y="31" width="3.4" height="7" rx="1.4"/><rect x="${15+i*6.1}" y="42" width="3.2" height="7" rx="1.4"/>`).join('')}</g>`,
+cotton_swab: [[12,52,46,14],[16,40,54,30],[22,58,40,20]].map(([a,b,c,d])=>LINE(`M${a} ${b}L${c} ${d}`,'#8fc7ee',2.2)
+  + `<ellipse cx="${a}" cy="${b}" rx="3.6" ry="3.6" fill="#fff" stroke="${INK}" stroke-width="2"/><ellipse cx="${c}" cy="${d}" rx="3.6" ry="3.6" fill="#fff" stroke="${INK}" stroke-width="2"/>`).join(''),
+detergent: G(`<path d="M14 22c0-2 2-4 4-4h24c6 0 10 4 10 10v26a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z" fill="#4aa7e8"/>
+  <path d="M34 18v-6h9v6" fill="#f08a2b"/><rect x="20" y="24" width="12" height="9" rx="3" fill="#e3c88f"/>
+  <rect x="18" y="38" width="24" height="12" rx="2" fill="#fff"/><path d="M22 44h16" stroke="#2f7fd1" stroke-width="2.4"/>`),
+clear_box: G(`<path d="M8 34v8l24 12 24-12v-8" fill="#e3f0f4" fill-opacity=".7"/>
+  <path d="M8 34l24-11 24 11-24 11z" fill="#f4fafc" fill-opacity=".7"/>
+  <path d="M14 34l18-8 18 8-18 8z" fill="#f2c56b" fill-opacity=".5" stroke-width="1.2"/><path d="M32 45v9" stroke-width="1.4"/>`) + HL('M12 38l8 4'),
+toy_shovel: G(`<g transform="rotate(28 32 32)"><rect x="29" y="4" width="6" height="30" rx="3" fill="#f0c94a"/><rect x="24" y="4" width="16" height="6" rx="3" fill="#f0c94a"/>
+  <path d="M19 32h26l-2 16c-1 7-6 10-11 10s-10-3-11-10z" fill="#e8534a"/></g>`),
+
+/* 保麗龍 */
+noodle_bowl: G(`<path d="M10 26h44l-6 28c-.5 2-2 3-4 3H20c-2 0-3.5-1-4-3z" fill="${FOAM}"/>
+  <ellipse cx="32" cy="26" rx="22" ry="5" fill="#fbfaf3"/><ellipse cx="32" cy="26" rx="18" ry="3.2" fill="#e8d6a8" stroke-width="1.4"/>
+  <path d="M38 24l13-13 5 5-12 11z" fill="#e8534a" stroke-width="1.8"/><path d="M16 38h32" stroke="#e8534a" stroke-width="3"/>`),
+meat_tray: G(`<path d="M6 36v5l26 12 26-12v-5" fill="#e7e3d6"/><path d="M6 36l26-12 26 12-26 12z" fill="${FOAM}"/>
+  <path d="M15 36l17-8 17 8-17 8z" fill="#f3f0e6" stroke-width="1.3"/><path d="M24 36l8-4 8 4-8 4z" fill="#f2b3b8" stroke="none"/>`),
+foam_bits: G(`<path d="M8 22l10-6 7 5-3 9-11 1z" fill="${FOAM}"/><path d="M34 12l12 2 3 9-9 4-7-6z" fill="${FOAM}"/>
+  <path d="M14 42l9-3 6 7-5 8-10-3z" fill="${FOAM}"/><path d="M38 38l10-3 7 8-5 8-11-3z" fill="${FOAM}"/><path d="M28 28l5-2 3 4-3 3-5-1z" fill="${FOAM}"/>`),
+kickboard: G(`<path d="M14 8h36c4 0 7 3 7 7v36c0 5-4 8-8 8H15c-4 0-8-3-8-8V15c0-4 3-7 7-7z" fill="#5fb0e0"/>
+  <rect x="21" y="15" width="22" height="7" rx="3.5" fill="#e3c88f"/><path d="M57 40l-5-2 1-6 4-1" fill="#e3c88f" stroke-width="1.8"/>`)
+  + `<g fill="#3f93c7">${[[16,30],[24,36],[34,32],[42,40],[20,46],[30,50],[44,50],[14,40],[38,26]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.4"/>`).join('')}</g>`,
+
+/* 金屬 */
+gas_can: G(`<g transform="rotate(-16 32 32)"><path d="M12 22h36v22H12z" fill="#f08a2b"/><rect x="20" y="27" width="18" height="12" fill="#fff"/>
+  <ellipse cx="12" cy="33" rx="4" ry="11" fill="#cdd3d7"/><path d="M48 22c3 0 5 5 5 11s-2 11-5 11" fill="#e0e4e7"/><rect x="52" y="30" width="6" height="6" rx="1" fill="#cdd3d7"/>
+  <path d="M24 31h10M24 35h7" stroke="#d83a34" stroke-width="1.8"/></g>`),
+spray_can: G(`<g transform="rotate(-14 32 32)"><path d="M20 21h24v33a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z" fill="#3e9b63"/>
+  <path d="M20 21c0-5 5-8 12-8s12 3 12 8z" fill="#cdd3d7"/><rect x="28.5" y="6" width="7" height="7" rx="1" fill="#fff"/><path d="M20 34h24M20 46h24" stroke-width="1.5"/></g>`)
+  + `<circle cx="50" cy="16" r="2.2" fill="#3e9b63"/><circle cx="55" cy="22" r="1.6" fill="#3e9b63"/>`,
+coffee_can: G(`<path d="M18 20v30c0 3 6.3 5 14 5s14-2 14-5V20" fill="#7a4a2a"/><path d="M18.5 30h27v10h-27z" fill="#f1dc9a" stroke="none"/>
+  <path d="M18 30h28M18 40h28" stroke-width="1.4"/><ellipse cx="32" cy="35" rx="3" ry="3.6" fill="#7a4a2a" stroke-width="1.4"/><path d="M32 31.6v6.8" stroke="#f1dc9a" stroke-width="1"/>
+  <ellipse cx="32" cy="20" rx="14" ry="5" fill="#cdd3d7"/>`) + `<g fill="#b86a2e"><circle cx="22" cy="47" r="2"/><circle cx="41" cy="45" r="1.5"/></g>`,
+nail: G(`<g transform="rotate(35 32 32)"><rect x="22" y="8" width="20" height="5" rx="2" fill="#8a949a"/><path d="M29.5 13h5v36l-2.5 7-2.5-7z" fill="#b9c2c7"/></g>
+  <path d="M40 50l10-6 2 3-6 5 8 4-1 3-10-5z" fill="#a45f2e" stroke-width="1.8"/>`),
+hanger: LINE('M32 20c0-7 8-7 8-1 0 3-8 4-8 8L7 46h50L32 27', '#b9c2c7', 2.6),
+milk_tin: G(`<path d="M12 22v28c0 3.5 9 6 20 6s20-2.5 20-6V22" fill="#e9eef0"/><path d="M12.6 31h38.8v13H12.6z" fill="#4aa7e8" stroke="none"/>
+  <path d="M12 31h40M12 44h40" stroke-width="1.4"/><path d="${star(32,37.5,5,2.2,5)}" fill="#fff" stroke-width="1.2"/>
+  <ellipse cx="32" cy="22" rx="20" ry="6" fill="#cdd3d7"/><ellipse cx="32" cy="22" rx="15" ry="4" fill="none" stroke-width="1.4"/>`),
+
+/* 玻璃 */
+tonic_bottle: G(`<path d="M27 11h10v5c0 2 6 3 6 8v31a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V24c0-5 6-6 6-8z" fill="#8a4a1c" fill-opacity=".92"/>
+  <rect x="26" y="5" width="12" height="7" rx="1.5" fill="#f0c94a"/><rect x="21" y="32" width="22" height="12" fill="#fff"/><path d="M26 38h12" stroke="#e8534a" stroke-width="3"/>`) + HL('M25 26v3M25 48v5'),
+med_vial: G(`<g transform="rotate(-20 32 32)"><rect x="12" y="20" width="14" height="30" rx="3" fill="#e3f0ec" fill-opacity=".9"/><rect x="13" y="14" width="12" height="7" rx="1" fill="#2f7fd1"/>
+  <rect x="12" y="30" width="14" height="10" fill="#fff"/><path d="M19 32v6M16 35h6" stroke="#e8534a" stroke-width="1.8"/></g>
+  <g transform="rotate(25 44 40)"><rect x="37" y="26" width="13" height="26" rx="3" fill="#b8742c" fill-opacity=".9"/><rect x="38" y="21" width="11" height="6" rx="1" fill="#34322e"/></g>`),
+glass_shard: G(`<path d="M8 42l15-28 9 21z" fill="#bfe3d0" fill-opacity=".85"/><path d="M34 22l19-7-6 27z" fill="#e3f0ec" fill-opacity=".85"/>
+  <path d="M20 50l17-9 5 15z" fill="#9fd4b4" fill-opacity=".85"/>`) + HL('M14 38l7-14M38 24l9-4'),
+perfume: G(`<path d="M16 28h32l4 10-4 18H16l-4-18z" fill="#f4c7cf" fill-opacity=".9"/><path d="M12 38h40M16 28l4 10-4 18M48 28l-4 10 4 18" fill="none" stroke-width="1.3"/>
+  <rect x="26" y="18" width="12" height="10" rx="1" fill="#c9a227"/><path d="M38 22c6 0 8-4 12-2" fill="none" stroke-width="1.8"/><circle cx="53" cy="20" r="4" fill="#e8534a"/>`),
+
+/* 漁具 */
+glowstick: `<circle cx="32" cy="32" r="22" fill="#b6f28a" opacity=".35"/>` + LINE('M14 50L50 14','#9df06a',6.5)
+  + G(`<circle cx="13" cy="51" r="3.4" fill="#34322e"/><circle cx="51" cy="13" r="3.4" fill="#34322e"/>`),
+sinker: `<path d="M32 4v12" stroke="${INK}" stroke-width="1.2"/>` + G(`<circle cx="32" cy="15" r="3" fill="none" stroke-width="2"/>
+  <path d="M32 18c6 8 12 16 12 24a12 12 0 0 1-24 0c0-8 6-16 12-24z" fill="#7e8586"/><circle cx="50" cy="52" r="5" fill="#7e8586"/><circle cx="12" cy="50" r="4" fill="#7e8586"/>`) + HL('M26 40c0-4 2-8 4-11'),
+oyster_string: LINE('M32 2v60','#c9a66c',3) + G([[26,12,-20],[38,24,20],[26,36,-15],[38,48,25],[28,58,-10]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y}" rx="9" ry="6" fill="#d9d2c3" transform="rotate(${r} ${x} ${y})"/><ellipse cx="${x}" cy="${y}" rx="5" ry="3" fill="none" stroke-width="1.2" transform="rotate(${r} ${x} ${y})"/>`).join('')),
+bobber: `<path d="M32 44v18" stroke="${INK}" stroke-width="1.2"/>` + G(`<path d="M32 4v12" stroke-width="2.4"/><path d="M32 16c7 0 10 6 10 13s-5 15-10 15-10-8-10-15 3-13 10-13z" fill="#fbfaf5"/>
+  <path d="M22 28c0-7 3-12 10-12s10 5 10 12z" fill="#e8534a"/>`),
+broken_rod: LINE('M4 60L32 26','#34322e',3.2) + LINE('M38 20L60 2','#34322e',2.4)
+  + G(`<rect x="6" y="46" width="12" height="7" rx="2" fill="#8b6a3e" transform="rotate(-50 12 50)"/><circle cx="24" cy="36" r="2.6" fill="none" stroke-width="1.6"/><circle cx="48" cy="12" r="2" fill="none" stroke-width="1.4"/>
+  <path d="M32 26l2-4 2 2 2-4" fill="none" stroke-width="1.6"/>`),
+soft_lure: LINE('M10 38c6-12 14 6 20-4s14-10 20 0','#f47fa6',7) + G(`<path d="M50 34l8-6 0 12z" fill="#f47fa6"/><circle cx="14" cy="34" r="1.6" fill="${INK}"/>`) + LINE('M26 36c0 10-8 12-10 6','#b9c2c7',1.8),
+net_float: LINE('M2 30c20 6 40-6 60 0','#3d6e66',2) + G([[14,31],[32,31],[50,30]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="6" fill="#f0c94a"/><path d="M${x-8} ${y}h16" stroke-width="1.2"/>`).join('')),
+tackle_box: G(`<path d="M8 20h48l-4 12H12z" fill="#5fb37e"/><rect x="8" y="32" width="48" height="24" rx="3" fill="#3e9b63"/>
+  <path d="M24 32v24M40 32v24M8 44h48" fill="none" stroke-width="1.6"/><rect x="26" y="26" width="12" height="4" rx="2" fill="#34322e"/>
+  <circle cx="16" cy="38" r="2.4" fill="#e8534a"/><circle cx="48" cy="50" r="2.4" fill="#f0c94a"/>`),
+float_drum: G(`<rect x="6" y="18" width="52" height="30" rx="10" fill="#2f7fd1"/><ellipse cx="50" cy="33" rx="6" ry="14" fill="#4aa7e8"/>
+  <path d="M18 18v30M30 18v30M40 18v30" fill="none" stroke-width="1.8"/><circle cx="50" cy="33" r="3" fill="#1d4f86"/>`),
+net_needle: G(`<g transform="rotate(-35 32 32)"><path d="M32 2c7 8 10 18 10 30v24c0 3-2 5-4 5H26c-2 0-4-2-4-5V32c0-12 3-22 10-30z" fill="#6dc0b8"/>
+  <path d="M32 14v18" stroke-width="2"/><rect x="27" y="40" width="10" height="14" rx="1" fill="#e3c88f"/>
+  <path d="M22 36h20M22 39h20M22 42h20" stroke="#3d6e66" stroke-width="1.8"/></g>`),
+
+/* 其他 */
+drink_carton: G(`<path d="M16 18l14-6 18 6v36l-14 6-18-6z" fill="#fff"/><path d="M34 24l14-6v36l-14 6z" fill="#f0c94a"/>
+  <path d="M16 18l18 6v36" fill="none"/><path d="M16 32l18 6M16 38l18 6" stroke="#2f7fd1" stroke-width="2.6"/>
+  <path d="M12 26l4-14" stroke-width="3" stroke="${INK}"/><path d="M12 26l4-14" stroke="#e8534a" stroke-width="1.4"/>`),
+balloon: G(`<path d="M18 22c3-12 23-12 26 0 3 10-6 18-13 22-7-4-16-12-13-22z" fill="#e8534a"/><path d="M28 44l3 4 3-4z" fill="#e8534a"/>`)
+  + HL('M24 18c2-3 5-4 8-4') + LINE('M31 48c-6 5 6 8 0 14','#f0c94a',1.4),
+incense: [[18,6],[26,3],[34,5],[42,8]].map(([x,y],i)=>`<path d="M${x} ${y}L${x+(i-1.5)*3} 46" stroke="${INK}" stroke-width="4.6" stroke-linecap="round"/><path d="M${x} ${y}L${x+(i-1.5)*3} 46" stroke="#8b5a2b" stroke-width="2.4" stroke-linecap="round"/><path d="M${x+(i-1.5)*2.2} 34L${x+(i-1.5)*3} 58" stroke="${INK}" stroke-width="4.6" stroke-linecap="round"/><path d="M${x+(i-1.5)*2.2} 34L${x+(i-1.5)*3} 58" stroke="#d83a34" stroke-width="2.4" stroke-linecap="round"/>`).join('') + `<circle cx="26" cy="3" r="1.8" fill="#8a8580"/>`,
+paper_cup: G(`<path d="M15 14h34l-5 42c-.3 2-1.6 3-3.5 3h-17c-1.9 0-3.2-1-3.5-3z" fill="#fbfaf5"/>
+  <path d="M17 28h30l-1.4 12H18.4z" fill="#e8534a" stroke="none"/><path d="M17 28h30M18.4 40h27.2" stroke-width="1.4"/>
+  <ellipse cx="32" cy="14" rx="17" ry="4.5" fill="#fff"/><path d="M30 18l-2 40" stroke-width="1" opacity=".5"/>`),
+cloth: G(`<path d="M10 20l12-8h20l12 8-6 8-4-3v28c-6 3-18 3-24 0V25l-4 3z" fill="#5a7fc0"/>
+  <path d="M22 12c2 5 18 5 20 0M20 36c8 4 16-2 24 2M22 46c6 2 12-2 20 1" fill="none" stroke-width="1.4"/>`),
+sponge: G(`<path d="M10 30l30-10 16 8-30 11z" fill="#f0c94a"/><path d="M10 30v10l16 9V39z" fill="#e0b43a"/><path d="M26 39v10l30-11V28z" fill="#d9a520"/>
+  <path d="M10 30l30-10 16 8" fill="none"/><path d="M10 26l30-10 16 8-30 11-16-9z" fill="#3e9b63"/>`) + `<g fill="#c99a20"><circle cx="16" cy="40" r="1.3"/><circle cx="21" cy="44" r="1.2"/><circle cx="34" cy="44" r="1.3"/><circle cx="44" cy="39" r="1.3"/><circle cx="50" cy="36" r="1.2"/></g>`,
+sneaker: G(`<path d="M6 44c0-6 2-14 6-16l10-2c4 6 10 6 14 2l6 6c6 2 14 4 16 8v4H6z" fill="#e8534a"/>
+  <path d="M6 44h52v6c0 2-2 4-4 4H10c-2 0-4-2-4-4z" fill="#fbfaf5"/><path d="M24 30l4 4M28 28l4 4M32 30l4 4" stroke="#fff" stroke-width="2"/>`),
+cable: `<g fill="none">${[16,11,6].map(r=>`<ellipse cx="30" cy="34" rx="${r*1.3}" ry="${r}" stroke="${INK}" stroke-width="6"/><ellipse cx="30" cy="34" rx="${r*1.3}" ry="${r}" stroke="#34322e" stroke-width="3.4"/>`).join('')}</g>`
+  + LINE('M50 30c6-6 6-14 10-18','#34322e',3.4) + LINE('M60 12l2-6','#d9822b',2.2) + LINE('M4 40l-2 8','#d9822b',2.2),
+syringe: G(`<g transform="rotate(-35 32 32)"><rect x="16" y="26" width="28" height="12" rx="2" fill="#e3f0f4" fill-opacity=".9"/>
+  <path d="M44 29h6v6h-6z" fill="#fbfaf5"/><path d="M50 32h11" stroke-width="1.4"/><path d="M8 32h8" stroke-width="3"/><rect x="3" y="26" width="5" height="12" rx="1" fill="#fbfaf5"/>
+  <path d="M22 26v5M28 26v5M34 26v5M40 26v5" stroke-width="1.2"/><rect x="18" y="29" width="14" height="6" fill="#8fc7ee" stroke="none"/></g>`),
+sunglasses: G(`<path d="M4 26h56" stroke-width="3"/><path d="M8 26h20c0 10-4 16-10 16S8 36 8 26z" fill="#34322e"/><path d="M36 26h20c0 10-4 16-10 16S36 36 36 26z" fill="#34322e"/>
+  <path d="M58 26l4 16" stroke-width="3"/>`) + HL('M12 30l4 4M40 30l4 4'),
+
+/* 自然物 */
+barringtonia: G(`<path d="M32 6l18 16v20c0 9-8 15-18 15s-18-6-18-15V22z" fill="#9a7a4a"/>
+  <path d="M32 6v51M14 30c6 3 12 3 18 0s12-3 18 0" fill="none" stroke-width="1.6"/><path d="M29 57h6l-1 4h-4z" fill="#6a5230"/>`),
+morning_glory: LINE('M4 50c14-10 24 6 34-4s16-10 22-16','#5a8a30',2.4)
+  + G(`<path d="M18 44c-8-2-12-10-6-14 3 4 5 3 6 0 6 4 6 12 0 14z" fill="#7fb04a"/><path d="M40 40c-6-6-4-14 2-14 1 4 4 5 6 3 4 6-1 12-8 11z" fill="#6a9a3a"/>
+  <path d="M48 16l6-8 6 4-2 8-8 2z" fill="#d88ac8"/><circle cx="54" cy="14" r="2" fill="#fff" stroke-width="1"/>`),
+casuarina: G([[22,30],[40,24],[34,44]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="11" fill="#8a6238"/><path d="M${x-7} ${y-4}h14M${x-8} ${y+1}h16M${x-7} ${y+6}h14M${x} ${y-11}v22" stroke-width="1.2" fill="none"/>`).join('')),
+cuttlebone: G(`<path d="M32 4c10 8 14 24 12 38-1 8-6 16-12 18-6-2-11-10-12-18-2-14 2-30 12-38z" fill="#fbf9f1"/>
+  <path d="M32 12c6 6 8 18 7 28M32 12c-6 6-8 18-7 28M27 22h10M25 30h14M25 38h14M27 46h10" fill="none" stroke-width="1.2" opacity=".6"/>`),
+coconut: G(`<path d="M8 36c0-14 11-24 24-24s24 10 24 24c0 3-1 6-2 8H10c-1-2-2-5-2-8z" fill="#8b5a2b"/>
+  <path d="M12 42c0-10 9-18 20-18s20 8 20 18" fill="#f3ead6"/>`) + `<g stroke="#5e3b1a" stroke-width="1.2" fill="none"><path d="M14 22l4 6M22 16l2 6M32 13v6M42 16l-2 6M50 22l-4 6"/></g>`,
+spiral_shell: G(`<path d="M20 58c-6-10-4-24 4-34 6-8 14-16 20-20 2 10 2 22-2 32-3 8-8 16-14 22z" fill="#f3e2c3"/>
+  <path d="M22 44c8 0 16-4 20-10M22 32c6 0 12-4 16-10M28 22c4 0 8-2 11-6" fill="none" stroke="#b07a4a" stroke-width="2.4"/>
+  <path d="M20 58c-2-6 0-12 6-14 4 4 4 10 2 14z" fill="#f6c6a4"/>`),
+sand_dollar: G(`<circle cx="32" cy="32" r="24" fill="#e9e1cf"/>`) + `<g fill="none" stroke="#b5a88a" stroke-width="2">${[0,72,144,216,288].map(a=>`<ellipse cx="32" cy="20" rx="3" ry="9" transform="rotate(${a} 32 32)"/>`).join('')}</g><circle cx="32" cy="32" r="2" fill="#b5a88a"/>`,
+oyster_shell: G(`<path d="M12 22c6-10 20-14 32-10 10 4 12 16 8 26-4 12-16 20-28 18-10-2-16-12-16-20 0-6 2-10 4-14z" fill="#d9d2c3"/>
+  <path d="M18 24c8-6 20-8 28-2M16 34c10-4 24-4 32 2M20 46c8-2 18-2 24 0" fill="none" stroke="#9a9384" stroke-width="1.6"/>`),
+});
+
+/* 寄居蟹：可換殼 */
+const crabSvg = (house) => `<svg viewBox="0 0 80 64" aria-hidden="true">
+  ${G(`<path d="M18 50l-10 6M22 52l-8 10M26 52l-2 10" fill="none" stroke="#d9622b" stroke-width="3.4"/>`)}
+  <svg x="18" y="-2" width="60" height="60" viewBox="0 0 64 64">${ICONS[house]}</svg>
+  ${G(`<path d="M14 36c0-6 6-10 14-10s12 6 12 12-6 12-14 12-12-8-12-14z" fill="#ec8a4a"/>
+  <path d="M16 36c-8-2-14 2-12 8 4 2 8 0 10-4zM20 44c-8 2-10 8-6 10 4 0 6-4 8-6z" fill="#f08a4b"/>
+  <path d="M22 26l-2-10M28 26l2-10" fill="none" stroke-width="2"/><circle cx="20" cy="15" r="2.6" fill="#fff"/><circle cx="30" cy="15" r="2.6" fill="#fff"/>`)}
+  <circle cx="20" cy="15" r="1.2" fill="${INK}"/><circle cx="30" cy="15" r="1.2" fill="${INK}"/></svg>`;
+
+/* 海鳥 */
+const GULL_SVG = `<svg viewBox="0 0 90 56" aria-hidden="true">${G(`
+  <path d="M44 30C34 16 18 10 4 12c10 4 20 12 26 22z" fill="#c9d1d6"/><path d="M46 30c10-14 26-20 40-18-10 4-20 12-26 22z" fill="#c9d1d6"/>
+  <path d="M4 12c4 1 7 2 10 4M86 12c-4 1-7 2-10 4" fill="none" stroke-width="3"/>
+  <ellipse cx="45" cy="34" rx="10" ry="16" fill="#fbfaf5"/><circle cx="45" cy="20" r="7" fill="#fbfaf5"/>
+  <path d="M42 26l3 8 3-8z" fill="#f0c94a"/><path d="M40 48l5 6 5-6z" fill="#dcdcd6"/>`)}
+  <circle cx="42" cy="19" r="1.3" fill="${INK}"/><circle cx="48" cy="19" r="1.3" fill="${INK}"/></svg>`;
+
+/* 志工 */
+const VOLUNTEER_SVG = `<svg viewBox="0 0 56 72" aria-hidden="true">${G(`
+  <path d="M20 58l-2 12M36 58l2 12" stroke-width="5" stroke="#3b3a36"/>
+  <path d="M16 30c0-6 5-10 12-10s12 4 12 10v28H16z" fill="#7fb04a"/>
+  <path d="M22 22v36M34 22v36" stroke="#f0c94a" stroke-width="3"/>
+  <circle cx="28" cy="12" r="9" fill="#f2c9a0"/><path d="M18 10c2-8 18-8 20 0z" fill="#f4f2ee"/><path d="M16 10h24" stroke-width="2.4"/>
+  <path d="M40 32l10 6v26" fill="none" stroke-width="2.6"/><path d="M47 64l3 4 3-4" fill="none" stroke-width="2"/>
+  <path d="M16 34l-8 10" stroke-width="3.6" stroke="#7fb04a"/><path d="M2 42h14l-2 14H4z" fill="#fbfaf5"/>`)}
+  <circle cx="25" cy="12" r="1.2" fill="${INK}"/><circle cx="31" cy="12" r="1.2" fill="${INK}"/></svg>`;
+
+/* 小海龜、巢 */
+const HATCH_SVG = TURTLE_SVG.replace('#8a6a3a','#5a5448').replace(/#6d9a4a|#7aa856/g,'#6d6858');
+const NEST_SVG = `<svg viewBox="0 0 64 40" aria-hidden="true">${G(`<path d="M2 38c6-16 16-24 30-24s24 8 30 24z" fill="#d6b77c"/>`)}
+  ${G(`<circle cx="24" cy="26" r="5" fill="#fbf9f1"/><circle cx="34" cy="24" r="5" fill="#fbf9f1"/><circle cx="42" cy="30" r="4.5" fill="#fbf9f1"/><circle cx="29" cy="32" r="4.5" fill="#fbf9f1"/>`, 'stroke-width="1.6"')}</svg>`;
+
+/* 警示小角標（尖銳物） */
+const SHARP_BADGE = `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2l9 16H1z" fill="#f0c94a" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8v4.5" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/><circle cx="10" cy="15.2" r="1.2" fill="${INK}"/></svg>`;
+
 </script>
 <script>
 /* ============ 分類 ============ */
@@ -693,13 +888,79 @@ const ITEMS = [
   {id:'urchin', name:'海膽殼', cat:'natural', fact:'海膽死後留下的骨骼，是自然的一部分。'},
   {id:'feather', name:'羽毛', cat:'natural', fact:'海鳥換羽時自然掉落的羽毛，不是垃圾。'},
   {id:'turtle_egg', name:'海龜蛋殼', cat:'natural', fact:'海龜孵化後留下的蛋殼，請不要破壞或帶走。'},
+
+  {id:'toothbrush', name:'牙刷', cat:'plastic', fact:'一支牙刷在海裡可以存在數百年，斷掉的刷毛也會變成微塑膠。'},
+  {id:'strap', name:'打包帶', cat:'plastic', td:1, fact:'塑膠打包帶常形成環狀，可能套住海洋生物，丟棄前最好剪斷。'},
+  {id:'flower_pot', name:'塑膠花盆', cat:'plastic', fact:'黑色塑膠花盆長期曝曬會脆化，碎成小片散落在海岸。'},
+  {id:'basket', name:'塑膠提籃', cat:'plastic', fact:'市場常見的塑膠提籃，落海後會隨浪漂到很遠的地方。'},
+  {id:'cotton_swab', name:'棉花棒', cat:'plastic', fact:'塑膠棒身的棉花棒常被沖進馬桶，最後流進大海。'},
+  {id:'detergent', name:'洗衣精桶', cat:'plastic', fact:'大型塑膠桶在海上漂流時，可能載著附著的生物漂到其他海域。'},
+  {id:'clear_box', name:'透明餐盒', cat:'plastic', cf:1, why:'透明、硬硬的餐盒是塑膠，沒有保麗龍那種細小顆粒。', fact:'透明塑膠餐盒常被誤認為保麗龍，其實材質完全不同。'},
+  {id:'toy_shovel', name:'沙灘玩具鏟', cat:'plastic', fact:'在海邊玩完的塑膠玩具如果忘了帶走，就會變成海漂垃圾。'},
+
+  {id:'noodle_bowl', name:'泡麵碗', cat:'foam', cf:1, why:'表面有細小顆粒的泡麵碗是保麗龍做的，放保麗龍桶。', fact:'保麗龍碗裝過熱湯後很難清乾淨，回收率很低。'},
+  {id:'meat_tray', name:'生鮮托盤', cat:'foam', cf:1, why:'超市生鮮的白色托盤是保麗龍，不是塑膠。', fact:'生鮮托盤又輕又薄，很容易被風吹進水溝、流到海裡。'},
+  {id:'foam_bits', name:'保麗龍碎片', cat:'foam', special:'frag', fact:'大塊保麗龍放久了會碎成許多小碎片，碎得越小越難撿乾淨。'},
+  {id:'kickboard', name:'游泳浮板', cat:'foam', fact:'游泳浮板是發泡材質，破損後會掉出許多小碎塊。'},
+
+  {id:'gas_can', name:'卡式瓦斯罐', cat:'metal', fact:'用過的瓦斯罐可能還有殘留的瓦斯，不要敲打或靠近火源。'},
+  {id:'spray_can', name:'噴漆罐', cat:'metal', fact:'噴漆罐裡殘留的漆料和壓力都有危險，要小心處理。'},
+  {id:'coffee_can', name:'鐵罐咖啡', cat:'metal', fact:'鐵罐和鋁罐都是金屬，回收後可以重新熔鑄使用。'},
+  {id:'nail', name:'生鏽鐵釘', cat:'metal', fact:'生鏽的鐵釘很尖銳，淨灘時要用夾子或戴手套撿。'},
+  {id:'hanger', name:'鐵衣架', cat:'metal', fact:'鐵衣架彎曲變形後，尖端可能刺傷生物。'},
+  {id:'milk_tin', name:'奶粉罐', cat:'metal', fact:'奶粉罐的罐身是金屬，洗乾淨就可以回收。'},
+
+  {id:'tonic_bottle', name:'提神飲料瓶', cat:'glass', fact:'褐色小玻璃瓶在台灣海岸很常見，破掉後碎片很銳利。'},
+  {id:'med_vial', name:'玻璃藥瓶', cat:'glass', fact:'玻璃藥瓶體積小，容易被忽略，但一樣不會分解。'},
+  {id:'glass_shard', name:'玻璃碎片', cat:'glass', fact:'碎玻璃非常銳利，淨灘時不要徒手撿。'},
+  {id:'perfume', name:'香水瓶', cat:'glass', fact:'香水瓶的玻璃很厚，在海裡可以保存非常久。'},
+
+  {id:'glowstick', name:'夜釣螢光棒', cat:'fishing', cf:1, why:'螢光棒雖然是塑膠做的，但它是夜釣用的漁具，放漁具桶。', fact:'螢光棒裡有化學藥劑，破裂後可能危害海洋生物。'},
+  {id:'sinker', name:'釣魚鉛墜', cat:'fishing', cf:1, why:'鉛墜雖然是金屬，但它是漁具，放漁具桶。', fact:'鉛是重金屬，遺落在海中的鉛墜可能被水鳥誤食而中毒。'},
+  {id:'oyster_string', name:'蚵串繩', cat:'fishing', fact:'養蚵用的繩子和殘留的蚵殼，常被沖上西部海岸。'},
+  {id:'bobber', name:'釣魚浮漂', cat:'fishing', fact:'顏色鮮豔的浮漂，很容易被海鳥誤認為食物。'},
+  {id:'broken_rod', name:'斷掉的釣竿', cat:'fishing', fact:'斷裂的釣竿常和釣線一起纏在礁石上。'},
+  {id:'soft_lure', name:'塑膠假餌', cat:'fishing', td:1, fact:'軟塑膠假餌長得像小魚或小蟲，魚和海鳥可能誤吞。'},
+  {id:'net_float', name:'漁網浮子', cat:'fishing', fact:'從漁網上脫落的小浮子，會隨洋流漂到很遠的海岸。'},
+  {id:'tackle_box', name:'釣具盒', cat:'fishing', fact:'被遺忘在海邊的釣具盒，裡面常裝著魚鉤等危險物品。'},
+  {id:'float_drum', name:'塑膠浮筒', cat:'fishing', cf:1, why:'塑膠浮筒是漁業用具，放漁具桶；保麗龍做的浮具才放保麗龍桶。', fact:'有些養殖場改用塑膠浮筒來減少保麗龍碎片，但浮筒脫落一樣會變成垃圾。'},
+  {id:'net_needle', name:'補網梭', cat:'fishing', fact:'漁民用來修補漁網的工具，掉進海裡後也成了漁業廢棄物。'},
+
+  {id:'drink_carton', name:'鋁箔包', cat:'other', cf:1, why:'鋁箔包由紙、塑膠和鋁層層複合而成，不是金屬，放其他桶。', fact:'鋁箔包需要專門設備把各層材料分開，才能回收。'},
+  {id:'balloon', name:'氣球', cat:'other', td:1, fact:'氣球落海後常被海龜和海鳥誤當成食物，綁繩也會纏住生物。'},
+  {id:'incense', name:'線香', cat:'other', fact:'祭拜後的線香被沖進海裡，竹籤的尖端可能刺傷生物。'},
+  {id:'paper_cup', name:'紙杯', cat:'other', cf:1, why:'紙杯內層有防水塑膠淋膜，不是單純的紙，放其他桶。', fact:'紙杯看起來會分解，但內層的塑膠膜會留在環境中。'},
+  {id:'cloth', name:'舊衣服', cat:'other', fact:'衣服的化學纖維在海水中會脫落成微塑膠纖維。'},
+  {id:'sponge', name:'菜瓜布海綿', cat:'other', fact:'海綿和菜瓜布多是合成材質，碎屑會變成微塑膠。'},
+  {id:'sneaker', name:'運動鞋', cat:'other', fact:'鞋子由橡膠、布料、塑膠等多種材料組成，很難分開回收。'},
+  {id:'cable', name:'廢電線', cat:'other', cf:1, why:'電線外面是塑膠、裡面是銅線，混合材質放其他桶。', fact:'電線外皮的塑膠含有添加物，長期泡在海水裡可能釋出化學物質。'},
+  {id:'syringe', name:'針筒', cat:'other', fact:'針筒的針頭非常危險，淨灘時看到要用夾子夾起，絕對不要徒手撿。'},
+  {id:'sunglasses', name:'太陽眼鏡', cat:'other', fact:'太陽眼鏡混合了塑膠鏡框、鏡片和金屬零件。'},
+
+  {id:'barringtonia', name:'棋盤腳果實', cat:'natural', fact:'棋盤腳的果實能漂在海上傳播種子，是海岸植物的旅行方式。'},
+  {id:'morning_glory', name:'馬鞍藤', cat:'natural', fact:'馬鞍藤是海灘上常見的植物，能幫忙固定沙丘。'},
+  {id:'casuarina', name:'木麻黃毬果', cat:'natural', fact:'木麻黃常種在海岸當防風林，掉落的毬果是自然物。'},
+  {id:'cuttlebone', name:'墨魚骨', cat:'natural', fact:'墨魚體內的骨板很輕，墨魚死後常漂上岸。'},
+  {id:'coconut', name:'椰子殼', cat:'natural', fact:'椰子可以在海上漂流很遠，最後在其他海岸發芽。'},
+  {id:'spiral_shell', name:'螺殼', cat:'natural', fact:'空的螺殼是寄居蟹搬家的重要選擇，請留在沙灘上。'},
+  {id:'sand_dollar', name:'沙錢', cat:'natural', fact:'沙錢是扁平的海膽親戚，死後留下的骨骼常被沖上岸。'},
+  {id:'oyster_shell', name:'牡蠣殼', cat:'natural', fact:'牡蠣殼可以讓小生物附著和躲藏。'},
 ];
+const FLAGS = {
+  sharp:['glass_cup','can_lid','hook','glass_shard','nail','syringe'],
+  bird:['bottle_cap','lighter','straw','cotton_swab','glowstick','balloon','soft_lure','toothbrush','bobber'],
+  light:['plastic_bag','fruit_net','foam_peanuts','foam_cup','foam_bits','mask','spoon','balloon','paper_cup','meat_tray'],
+  home:['spiral_shell']
+};
+Object.entries(FLAGS).forEach(([f,ids])=>ids.forEach(id=>{ const it=ITEMS.find(i=>i.id===id); if(it) it[f]=1; }));
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 
+const ALL6 = ['plastic','foam','metal','glass','fishing','other'];
 const STAGES = [
-  {name:'第一潮', cats:['plastic','foam','metal','glass'], waves:4, per:4, interval:12, natural:[0,0,0,0], noCf:true},
-  {name:'第二潮', cats:['plastic','foam','metal','glass','fishing','other'], waves:5, per:5, interval:11, natural:[1,1,2,1,1], turtle:[2]},
-  {name:'第三潮', cats:['plastic','foam','metal','glass','fishing','other'], waves:5, per:5, interval:10, natural:[1,2,1,2,1], cf:2, buried:.35, net:[2], turtle:[1,3]},
+  {name:'第一潮', cats:['plastic','foam','metal','glass'], waves:4, per:4, interval:12, natural:[0,0,0,0], noCf:true, frag:true},
+  {name:'第二潮', cats:ALL6, waves:5, per:5, interval:11, natural:[1,1,2,1,1], turtle:[2], crab:[1,3], sharp:true, frag:true},
+  {name:'第三潮', cats:ALL6, waves:5, per:5, interval:10, natural:[1,2,1,2,2], cf:2, buried:.3, net:[2], turtle:[1], gull:[0,1,2,3,4], wind:[1,3], typhoon:4, typhoonPer:9, typhoonInterval:15, sharp:true, frag:true},
+  {name:'獎勵關', cats:ALL6, waves:1, per:8, interval:24, natural:[0], bonus:true, hatch:8, sharp:true},
 ];
 
 /* ============ 工具 ============ */
@@ -760,18 +1021,23 @@ function updateDexCount(){ $('#dexCount').textContent = `${dex.size}/${ITEMS.len
 /* ============ 狀態 ============ */
 let S = null;
 const field = $('#field'), itemsLayer = $('#items'), binsEl = $('#bins');
-let uidSeq = 0, drag = null, toastTimer = 0, fw = 0, fh = 0;
+let uidSeq = 0, drag = null, toastTimer = 0, fw = 0, fh = 0, gidSeq = 0;
+const seaFrac = () => (parseFloat(field.style.getPropertyValue('--sea-h'))||17)/100;
+const ST = () => STAGES[S.stage];
+const px = it => [it.fx*fw, it.fy*fh];
 
 function newGame(){
   S = {
-    stage:0, wave:0, score:0, hp:100, combo:0, maxCombo:0,
-    items:[], used:new Set(), sel:null, turtle:null,
-    running:false, paused:false, waving:false, early:false,
+    gid:++gidSeq, stage:0, wave:0, score:0, hp:100, combo:0, maxCombo:0,
+    items:[], used:new Set(), sel:null, turtle:null, crab:null, gull:null, wind:null, hatch:[], nest:null,
+    running:false, paused:false, waving:false, early:false, windDone:false, gullBudget:0, gullNext:0,
+    hatchSpawned:0, hatchTimer:0, hatchDoneFlag:false, fragTold:false,
     timeLeft:0, interval:12, seenCf:new Set(), newCards:[],
-    stats:{correct:0, wrong:0, swept:0, kept:0, natBinned:0, turtleSafe:0, turtleHurt:0, byCat:{}}
+    stats:{correct:0, wrong:0, swept:0, kept:0, natBinned:0, turtleSafe:0, turtleHurt:0, frags:0,
+      gullSaved:0, gullLost:0, crabSwap:0, crabMiss:0, hurtSharp:0, helped:0, hatchSaved:0, hatchLost:0, hatchTotal:0, byCat:{}}
   };
   CAT_ORDER.forEach(c=>S.stats.byCat[c]=0);
-  itemsLayer.innerHTML=''; setScore(0); setHP(100);
+  itemsLayer.innerHTML=''; setScore(0); setHP(100); setCombo(0);
   showScreen('game');
   startStage(0);
 }
@@ -784,31 +1050,48 @@ function setHP(v){
   $('#hpBar').classList.toggle('low', S.hp<=35);
 }
 function setCombo(n){ S.combo=n; S.maxCombo=Math.max(S.maxCombo,n); $('#combo').innerHTML = n>=2?`<span class="combo">連續 ${n}</span>`:''; }
-function updateWhere(){ const st=STAGES[S.stage]; $('#where').innerHTML=`${st.name}<small>浪 ${Math.min(S.wave+1,st.waves)}/${st.waves}</small>`; }
+function updateWhere(){
+  const st=ST();
+  $('#tideLbl').textContent = st.bonus ? '剩餘時間' : '下一波浪';
+  $('#where').innerHTML = st.bonus ? `${st.name}<small>小海龜出發</small>` : `${st.name}<small>浪 ${Math.min(S.wave+1,st.waves)}/${st.waves}</small>`;
+}
 
 function renderBins(){
-  const st=STAGES[S.stage];
+  const st=ST();
   binsEl.innerHTML = st.cats.map(c=>`<button class="bin" data-cat="${c}" aria-label="${CATS[c].full}"><span class="can">${binSvg(CATS[c])}</span><span>${CATS[c].name}</span></button>`).join('');
-  $('#deckHint').textContent = st.natural.some(n=>n>0) ? '貝殼、海藻這類自然物不用撿，讓浪帶走' : '拖到桶子上放開，或先點物品再點桶子';
+  $('#deckHint').textContent = st.bonus ? '清出一條路，讓小海龜爬回海裡'
+    : st.natural.some(n=>n>0) ? '貝殼、海藻這類自然物不用撿，讓浪帶走' : '拖到桶子上放開，或先點物品再點桶子';
 }
 
 /* ============ 潮段 ============ */
+const WAVE_ICON = `<svg viewBox="0 0 64 64">${G(`<path d="M4 40c8-16 22-24 34-18 8 4 8 14 0 16-4 1-7-2-6-5 6 2 6-8-2-8-10 0-18 10-22 22z" fill="#3e9ca0"/><path d="M4 48c10 4 20-4 30 0s20 4 26 0v10H4z" fill="#1f6e7a"/>`)}</svg>`;
+const WIND_ICON = `<svg viewBox="0 0 64 64">${G(`<path d="M6 24h34c6 0 8-8 2-10M6 36h44c6 0 8 8 2 10M6 48h24" fill="none" stroke-width="4" stroke="#3e9ca0"/>`)}</svg>`;
+const binTag = c => `<span><i style="background:${CATS[c].color}"></i>${CATS[c].name}</span>`;
+const row = (pic, text) => `<div class="row"><div class="pic">${pic}</div><div>${text}</div></div>`;
 const INTRO = [
   ()=>`<h2>第一潮</h2><p class="sub">先從最常見的四種開始。</p>
     <div class="newbins">${['plastic','foam','metal','glass'].map(binTag).join('')}</div>
-    <div class="row"><div class="pic">${iconSvg('pet_bottle')}</div><div>把沙灘上的垃圾拖到對應的桶子。也可以先點物品，再點桶子。</div></div>
-    <div class="row"><div class="pic">${WAVE_ICON}</div><div>上方的「下一波浪」跑完，沒撿的垃圾會被捲回海裡，海洋健康會下降。提早清完有加分。</div></div>`,
+    ${row(iconSvg('pet_bottle'),'把沙灘上的垃圾拖到對應的桶子。也可以先點物品，再點桶子。')}
+    ${row(WAVE_ICON,'「下一波浪」跑完，沒撿的垃圾會被捲回海裡，海洋健康會下降。提早清完有加分。')}
+    ${row(iconSvg('foam_bits'),'保麗龍放太久會<b>碎成好幾塊</b>。看到它開始抖動，就要優先處理。')}
+    ${row(VOLUNTEER_SVG,'連續答對 5 次，志工會來幫你撿一件。')}`,
   ()=>`<h2>第二潮</h2><p class="sub">新增兩個桶子，還有新的狀況。</p>
     <div class="newbins">${['fishing','other'].map(binTag).join('')}</div>
-    <div class="row"><div class="pic">${iconSvg('shell')}</div><div>沙灘上開始出現<b>自然物</b>。貝殼、海藻不用撿，讓海浪帶走就有加分；丟進桶子反而扣分。</div></div>
-    <div class="row"><div class="pic">${TURTLE_SVG}</div><div>海龜會爬過沙灘。牠附近的塑膠袋、吸管、漁繩會閃紅圈，快丟進桶子，或拖到旁邊。</div></div>
+    ${row(iconSvg('shell'),'沙灘上開始出現<b>自然物</b>。貝殼、海藻不用撿，讓海浪帶走就有加分；丟進桶子反而扣分。')}
+    ${row(TURTLE_SVG,'海龜會爬過沙灘。牠附近的塑膠袋、吸管、漁繩會閃紅圈，快丟進桶子，或拖到旁邊。')}
+    ${row(crabSvg('bottle_cap'),'寄居蟹背著瓶蓋當殼。把<b>螺殼</b>拖給牠，牠就會換殼，再把瓶蓋撿起來。')}
+    ${row(`<div style="position:relative;width:100%;height:100%">${iconSvg('glass_shard')}<span style="position:absolute;right:-4px;top:-4px;width:20px;height:20px">${SHARP_BADGE}</span></div>`,'有黃色警示的是<b>尖銳物</b>。要按住不放，等夾子夾穩再拖；直接抓會受傷。')}
     <div class="note">分類原則：看得出是<b>保麗龍</b>做的，都進保麗龍桶；其他漁業用具進漁具桶。</div>`,
   ()=>`<h2>第三潮</h2><p class="sub">最後一潮，很多東西容易搞混。</p>
-    <div class="row"><div class="pic">${MOUND_SVG}</div><div>有些東西埋在沙裡，點一下挖出來。挖出來的也可能是自然物。</div></div>
-    <div class="row"><div class="pic">${iconSvg('ghost_net')}</div><div>廢棄漁網太大了，要先點 3 下剪開才拿得動。被浪捲走會大扣海洋健康。</div></div>`
+    ${row(MOUND_SVG,'有些東西埋在沙裡，點一下挖出來。挖出來的也可能是自然物。')}
+    ${row(iconSvg('ghost_net'),'廢棄漁網要先點 3 下剪開才拿得動。被浪捲走會大扣海洋健康。')}
+    ${row(GULL_SVG,'沙灘上出現<b>影子</b>，代表海鳥要來叼走小塑膠。趕快把影子下的東西收掉。')}
+    ${row(WIND_ICON,'<b>東北季風</b>吹起時，塑膠袋、紙杯這些輕的東西會被吹向海邊。')}
+    ${row(iconSvg('float_drum'),'最後一波是<b>颱風過後</b>，垃圾會特別多，而且漁具特別多。')}`,
+  ()=>`<h2>獎勵關：小海龜出發</h2><p class="sub">這一關不會扣海洋健康。</p>
+    ${row(NEST_SVG,'小海龜孵出來了！牠們會從巢裡一隻隻爬向大海。')}
+    ${row(HATCH_SVG,'被垃圾擋住的小海龜會卡住，卡太久就回不了海。把路上的垃圾分類清掉，幫牠們回家。')}`
 ];
-const WAVE_ICON = `<svg viewBox="0 0 64 64">${G(`<path d="M4 40c8-16 22-24 34-18 8 4 8 14 0 16-4 1-7-2-6-5 6 2 6-8-2-8-10 0-18 10-22 22z" fill="#3e9ca0"/><path d="M4 48c10 4 20-4 30 0s20 4 26 0v10H4z" fill="#1f6e7a"/>`)}</svg>`;
-const binTag = c => `<span><i style="background:${CATS[c].color}"></i>${CATS[c].name}</span>`;
 
 function startStage(i){
   S.stage=i; S.wave=0; S.interval=STAGES[i].interval; S.timeLeft=S.interval;
@@ -819,7 +1102,7 @@ function startStage(i){
   $('#goBtn').focus();
 }
 
-function openCard(id, html){ const o=$('#'+id); o.querySelector('.card').innerHTML=html; o.classList.add('on'); }
+function openCard(id, html){ const o=$('#'+id); o.querySelector('.card').innerHTML=html; o.classList.add('on'); o.querySelector('.card').scrollTop=0; }
 function closeCard(id){ $('#'+id).classList.remove('on'); }
 
 /* ============ 浪 ============ */
@@ -829,30 +1112,61 @@ function runWave(first=false){
   whoosh();
   surge.style.transition=`height ${T(550)}ms ease-in`;
   surge.style.height='100%';
+  const gid=S.gid;
   setTimeout(()=>{
+    if(S.gid!==gid) return;
     if(!first) resolveBeach();
     if(S.hp<=0){ retreat(); setTimeout(()=>finish(false), T(700)); return; }
     if(!first) S.wave++;
-    const st=STAGES[S.stage];
-    if(S.wave>=st.waves){ retreat(); setTimeout(stageDone, T(800)); return; }
+    const st=ST();
+    if(S.wave>=st.waves){ retreat(); setTimeout(()=>{ if(S.gid===gid) stageDone(); }, T(800)); return; }
     updateWhere();
-    spawnWave();
+    const typhoon = st.typhoon===S.wave;
+    S.interval = typhoon ? st.typhoonInterval : st.interval;
+    spawnWave(typhoon);
     retreat();
-    setTimeout(()=>{ S.waving=false; S.early=false; S.timeLeft=S.interval; if(st.turtle && st.turtle.includes(S.wave)) spawnTurtle(); }, T(650));
+    if(typhoon) toast('颱風剛過，大量垃圾被沖上岸，漁具特別多！','bad',2800,'颱風過後');
+    setTimeout(()=>{
+      if(S.gid!==gid) return;
+      S.waving=false; S.early=false; S.timeLeft=S.interval; S.windDone=false;
+      if(S.helperPending){ S.helperPending=false; const g0=S.gid; setTimeout(()=>{ if(S.gid===g0&&S.running) spawnHelper(); }, T(1200)); }
+      S.gullBudget = st.gull && st.gull.includes(S.wave) ? (typhoon?2:1) : 0; S.gullNext = rand(1.2,2.6);
+      if(st.turtle && st.turtle.includes(S.wave)) spawnTurtle();
+      if(st.crab && st.crab.includes(S.wave)) spawnCrab();
+      if(st.bonus) startHatch();
+    }, T(650));
   }, T(580));
 }
 function retreat(){ surge.style.transition=`height ${T(700)}ms ease-out`; surge.style.height='0'; }
 
+function clearEvents(){
+  if(S.turtle){ S.turtle.el.remove(); S.turtle=null; }
+  if(S.crab){ S.crab.el.remove(); S.crab=null; }
+  if(S.gull){ S.gull.shadow.remove(); if(S.gull.bird) S.gull.bird.remove(); S.gull=null; }
+  if(S.wind){ S.wind.el.remove(); S.wind=null; }
+  S.hatch.forEach(h=>h.el.remove()); S.hatch=[];
+  if(S.nest){ S.nest.remove(); S.nest=null; }
+  itemsLayer.querySelectorAll('.volunteer').forEach(v=>v.remove());
+}
+
 function resolveBeach(){
+  const st=ST();
   let swept=0, hpLoss=0, kept=0;
   S.items.forEach(it=>{
     if(it.def.cat==='natural'){ kept++; unlock(it.def.id); }
-    else { swept++; hpLoss += it.def.special==='net' ? 15 : 6; }
+    else if(!st.bonus){ swept++; hpLoss += it.def.special==='net' ? 15 : it.frag ? 3 : 6; }
     it.el.classList.add('swept'); it.el.style.top='-10%';
     const el=it.el; setTimeout(()=>el.remove(), T(650));
   });
   S.items=[];
-  if(S.turtle){ if(!S.turtle.hurt){ S.stats.turtleSafe++; setScore(S.score+80); } S.turtle.el.remove(); S.turtle=null; }
+  if(S.turtle && !S.turtle.hurt){ S.stats.turtleSafe++; setScore(S.score+80); }
+  if(S.crab && !S.crab.swapped) S.stats.crabMiss++;
+  if(st.bonus){
+    const moving = S.hatch.filter(h=>h.state==='go').length + (st.hatch - S.hatchSpawned);
+    const stuck = S.hatch.filter(h=>h.state==='stuck').length;
+    S.stats.hatchSaved += moving; S.stats.hatchLost += stuck; setScore(S.score + moving*100);
+  }
+  clearEvents();
   S.stats.swept+=swept; S.stats.kept+=kept;
   if(kept) setScore(S.score + kept*40);
   if(hpLoss) setHP(S.hp - hpLoss);
@@ -865,9 +1179,10 @@ function resolveBeach(){
   }
 }
 
-function drawItem(cat, {noCf, cf, td}={}){
-  let pool = ITEMS.filter(i=>i.cat===cat && !i.special);
-  const f = p => p.filter(i=>(!noCf||!i.cf)&&(!cf||i.cf)&&(!td||i.td));
+function drawItem(cat, o={}){
+  const st=ST();
+  let pool = ITEMS.filter(i=>i.cat===cat && !i.special && (st.sharp || !i.sharp));
+  const f = p => p.filter(i=>(!o.noCf||!i.cf)&&(!o.cf||i.cf)&&(!o.td||i.td)&&(!o.bird||i.bird)&&(!o.light||i.light)&&(!o.home||i.home));
   let cand = f(pool).filter(i=>!S.used.has(i.id));
   if(!cand.length) cand = f(pool);
   if(!cand.length) cand = pool.filter(i=>!S.used.has(i.id));
@@ -875,43 +1190,49 @@ function drawItem(cat, {noCf, cf, td}={}){
   const it = pick(cand); S.used.add(it.id); return it;
 }
 
-function spawnWave(){
-  const st=STAGES[S.stage], w=S.wave;
-  const defs=[];
-  const nat = st.natural[w]||0;
-  let waste = st.per - nat;
+function spawnWave(typhoon){
+  const st=ST(), w=S.wave, defs=[];
+  let nat = st.natural[w]||0;
+  let per = typhoon ? st.typhoonPer : st.per;
+  const has = c => st.cats.includes(c);
+  if(st.crab && st.crab.includes(w)){ defs.push(drawItem('natural',{home:true})); per--; if(nat>0) nat--; }
+  let waste = per - nat;
+  const add = (cat,o)=>{ if(waste>0){ defs.push(drawItem(cat,{noCf:st.noCf,...o})); waste--; } };
   if(st.net && st.net.includes(w)){ defs.push(ITEM_BY_ID.ghost_net); waste--; }
-  if(st.turtle && st.turtle.includes(w)){
-    for(let k=0;k<2;k++){ defs.push(drawItem(pick(['plastic','fishing','other'].filter(c=>st.cats.includes(c))), {td:true})); waste--; }
-  }
-  if(st.cf){
-    for(let k=0;k<st.cf && waste>0;k++){ const c=pick(st.cats.filter(c=>ITEMS.some(i=>i.cat===c&&i.cf&&!S.used.has(i.id)))||st.cats); if(c){ defs.push(drawItem(c,{cf:true})); waste--; } }
-  }
-  let catCycle = shuffle(st.cats);
-  for(let k=0;k<waste;k++) defs.push(drawItem(catCycle[k%catCycle.length], {noCf:st.noCf}));
-  for(let k=0;k<nat;k++) defs.push(drawItem('natural'));
+  if(st.turtle && st.turtle.includes(w)) for(let k=0;k<2;k++) add(pick(['plastic','fishing','other'].filter(has)),{td:true});
+  if(st.gull && st.gull.includes(w)) for(let k=0;k<(typhoon?2:1);k++) add(pick(['plastic','fishing','other'].filter(has)),{bird:true});
+  if(st.wind && st.wind.includes(w)) for(let k=0;k<2;k++) add(pick(['plastic','foam','other'].filter(has)),{light:true});
+  if(typhoon) for(let k=0;k<3;k++) add('fishing');
+  if(st.cf) for(let k=0;k<st.cf;k++){ const cs=st.cats.filter(c=>ITEMS.some(i=>i.cat===c&&i.cf&&!S.used.has(i.id))); if(cs.length) add(pick(cs),{cf:true}); }
+  const cyc = shuffle(st.cats); let k=0;
+  while(waste>0) add(cyc[(k++)%cyc.length]);
+  for(let n=0;n<nat;n++) defs.push(drawItem('natural'));
 
   measure();
   const pts=[];
   shuffle(defs).forEach(def=>{
     const big = def.special==='net';
     const buried = !big && st.buried && Math.random()<st.buried;
-    const p = findSpot(pts, big);
+    const p = findSpot(pts, big, defs.length, st.bonus);
     pts.push(p);
-    const it = {uid:'u'+(++uidSeq), def, fx:p.x, fy:p.y, buried, cuts: big?3:0};
-    S.items.push(it);
-    it.el = makeItemEl(it);
-    it.el.classList.add('arrive');
-    it.el.style.animationDelay = (REDUCED?0:Math.random()*220)+'ms';
-    itemsLayer.appendChild(it.el);
+    addItem({def, fx:p.x, fy:p.y, buried, cuts: big?3:0}, REDUCED?0:Math.random()*220);
   });
+}
+function addItem(o, delay=0){
+  const it = {uid:'u'+(++uidSeq), age:0, ...o};
+  S.items.push(it);
+  it.el = makeItemEl(it);
+  it.el.classList.add('arrive');
+  it.el.style.animationDelay = delay+'ms';
+  itemsLayer.appendChild(it.el);
+  return it;
 }
 
 function measure(){ const r=field.getBoundingClientRect(); fw=r.width; fh=r.height; }
-function findSpot(pts, big){
-  const minD = big?105:84; let best=null, bestD=-1;
-  for(let t=0;t<60;t++){
-    const x=rand(.13,.87), y=rand(.37,.86);
+function findSpot(pts, big, count, bonus){
+  const minD = big?105: count>7?70:84; let best=null, bestD=-1;
+  for(let t=0;t<80;t++){
+    const x = bonus ? rand(.2,.8) : rand(.12,.88), y = bonus ? rand(.36,.8) : rand(.35,.87);
     let d=Infinity; pts.forEach(p=>{ d=Math.min(d, Math.hypot((p.x-x)*fw,(p.y-y)*fh)); });
     if(d>=minD) return {x,y};
     if(d>bestD){ bestD=d; best={x,y}; }
@@ -919,25 +1240,29 @@ function findSpot(pts, big){
   return best;
 }
 
+const sharpOn = it => ST().sharp && it.def.sharp && !it.buried;
 function itemInner(it){
   if(it.buried) return `<span class="art">${MOUND_SVG}</span><span class="tag">點一下挖開</span>`;
   let tag = it.def.name;
   if(it.def.special==='net') tag = it.cuts>0 ? `點 ${it.cuts} 下剪開` : '漁網（已剪開）';
-  return `<span class="art">${iconSvg(it.def.id)}</span><span class="tag">${tag}</span>`;
+  if(sharpOn(it)) tag = it.armed ? '已夾住' : it.def.name;
+  const badge = sharpOn(it) && !it.armed ? `<span class="badge">${SHARP_BADGE}</span>` : '';
+  return `<span class="art">${iconSvg(it.def.id)}${badge}</span><span class="tag">${tag}</span>`;
 }
 function makeItemEl(it){
   const el=document.createElement('button');
-  el.className='item'+(it.buried?' buried':'')+(it.def.special==='net'?' big':'');
+  el.className='item'+(it.buried?' buried':'')+(it.def.special==='net'?' big':'')+(it.frag?' frag':'');
   el.dataset.uid=it.uid;
-  el.setAttribute('aria-label', it.buried?'埋在沙裡的東西，點一下挖開':it.def.name);
+  el.setAttribute('aria-label', it.buried?'埋在沙裡的東西，點一下挖開':it.def.name+(sharpOn(it)?'，尖銳物':''));
   el.style.left=(it.fx*100)+'%'; el.style.top=(it.fy*100)+'%';
   el.innerHTML=itemInner(it);
   return el;
 }
 const byUid = uid => S.items.find(i=>i.uid===uid);
+const posEl = it => { it.el.style.left=(it.fx*100)+'%'; it.el.style.top=(it.fy*100)+'%'; };
 
 /* ============ 操作：點擊、拖曳 ============ */
-function tapItem(it){
+function tapItem(it, fromKey=false){
   if(S.waving||S.paused||!S.running) return;
   if(it.buried){
     it.buried=false; it.el.classList.remove('buried'); it.el.innerHTML=itemInner(it);
@@ -951,6 +1276,7 @@ function tapItem(it){
     if(it.cuts===0){ it.el.classList.add('cut'); toast('剪開了！現在可以拖進桶子。','good',1800); }
     return;
   }
+  if(sharpOn(it) && !it.armed && !fromKey){ toast('尖銳物要按住不放，等夾子夾穩再拿。','info',2000,'小心'); return; }
   if(S.sel===it){ clearSel(); return; }
   clearSel(); S.sel=it; it.el.classList.add('selected');
   binsEl.querySelectorAll('.bin').forEach(b=>b.classList.add('ready'));
@@ -958,20 +1284,35 @@ function tapItem(it){
 function clearSel(){ if(S&&S.sel){ S.sel.el.classList.remove('selected'); S.sel=null; } binsEl.querySelectorAll('.bin').forEach(b=>b.classList.remove('ready')); }
 const canDrag = it => !it.buried && !(it.def.special==='net' && it.cuts>0);
 
+function armSharp(it){ it.armed=true; it.el.classList.remove('holding'); it.el.classList.add('armed'); it.el.innerHTML=itemInner(it); sfx.snip(); }
+function sharpHurt(it){
+  it.el.classList.remove('holding');
+  S.stats.hurtSharp++; setCombo(0); setHP(S.hp-5); sfx.hurt();
+  it.el.classList.remove('snip'); void it.el.offsetWidth; it.el.classList.add('snip');
+  toast(`直接抓${it.def.name}被割傷了，海洋健康 −5。尖銳物要按住不放，等夾子夾穩。`,'bad',3000,'受傷了');
+  if(S.hp<=0) endByHP();
+}
+
 itemsLayer.addEventListener('pointerdown', e=>{
-  const el=e.target.closest('.item'); if(!el||!S||S.waving||S.paused) return;
+  const el=e.target.closest('.item'); if(!el||!S||S.waving||S.paused||!S.running) return;
   const it=byUid(el.dataset.uid); if(!it) return;
   e.preventDefault(); ctx();
-  drag={it, el, sx:e.clientX, sy:e.clientY, moved:false, ghost:null, ox:0, oy:0};
+  drag={it, el, sx:e.clientX, sy:e.clientY, moved:false, ghost:null, ox:0, oy:0, hold:false, timer:0};
+  if(sharpOn(it) && !it.armed){
+    drag.hold=true; el.classList.add('holding');
+    const d=drag; d.timer=setTimeout(()=>{ if(drag===d && S.items.includes(it)){ d.hold=false; armSharp(it); } }, 550);
+  }
   try{ el.setPointerCapture(e.pointerId); }catch(_){}
 });
 window.addEventListener('pointermove', e=>{
   if(!drag) return;
   if(!drag.moved){
-    if(Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) < 7 || !canDrag(drag.it)) return;
+    if(Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) < 7) return;
+    if(drag.hold){ clearTimeout(drag.timer); const it=drag.it; drag=null; sharpHurt(it); return; }
+    if(!canDrag(drag.it)) return;
     drag.moved=true; clearSel();
     const r=drag.el.getBoundingClientRect();
-    const g=drag.el.cloneNode(true); g.className='item ghost'+(drag.it.def.special==='net'?' big cut':'');
+    const g=drag.el.cloneNode(true); g.className='item ghost'+(drag.it.def.special==='net'?' big cut':'')+(drag.it.frag?' frag':'');
     g.style.left=r.left+'px'; g.style.top=r.top+'px'; g.style.width=r.width+'px';
     document.body.appendChild(g);
     drag.ghost=g; drag.ox=drag.sx-r.left; drag.oy=drag.sy-r.top;
@@ -980,21 +1321,26 @@ window.addEventListener('pointermove', e=>{
   drag.ghost.style.left=(e.clientX-drag.ox)+'px'; drag.ghost.style.top=(e.clientY-drag.oy)+'px';
   const bin=binAt(e.clientX,e.clientY);
   binsEl.querySelectorAll('.bin').forEach(b=>b.classList.toggle('hover', b===bin));
+  if(S.crab) S.crab.el.classList.toggle('target', drag.it.def.home && !S.crab.swapped && nearCrab(e.clientX,e.clientY));
 });
 window.addEventListener('pointerup', e=>{
   if(!drag) return;
   const d=drag; drag=null;
+  clearTimeout(d.timer); d.el.classList.remove('holding');
   binsEl.querySelectorAll('.bin').forEach(b=>b.classList.remove('hover'));
-  if(!d.moved){ tapItem(d.it); return; }
-  if(S.waving){ d.ghost.remove(); d.el.classList.remove('lifted'); return; }
+  if(S.crab) S.crab.el.classList.remove('target');
+  if(!d.moved){ if(d.hold){ toast('再按久一點，等夾子夾穩。','info',1600,'小心'); return; } tapItem(d.it); return; }
+  if(S.waving||!S.items.includes(d.it)){ d.ghost.remove(); d.el.classList.remove('lifted'); return; }
+  if(d.it.def.home && S.crab && !S.crab.swapped && nearCrab(e.clientX,e.clientY)){ swapCrab(d.it, d.ghost); return; }
+  if(d.it.def.cat==='natural' && !d.it.def.home && S.crab && !S.crab.swapped && nearCrab(e.clientX,e.clientY)) toast('寄居蟹要的是螺旋狀的螺殼，扇形的貝殼牠住不進去。','info',2600,'住不進去');
   const bin=binAt(e.clientX,e.clientY);
   if(bin){ sendToBin(d.it, bin.dataset.cat, d.ghost); return; }
   const r=field.getBoundingClientRect();
   const cx=e.clientX-d.ox+d.ghost.offsetWidth/2, cy=e.clientY-d.oy+d.ghost.offsetHeight/2;
   if(cx>r.left && cx<r.right && cy>r.top && cy<r.bottom){
     d.it.fx=Math.min(.92,Math.max(.08,(cx-r.left)/r.width));
-    d.it.fy=Math.min(.9,Math.max(.3,(cy-r.top)/r.height));
-    d.el.style.transition='none'; d.el.style.left=(d.it.fx*100)+'%'; d.el.style.top=(d.it.fy*100)+'%';
+    d.it.fy=Math.min(.9,Math.max(seaFrac()+.08,(cy-r.top)/r.height));
+    d.el.style.transition='none'; posEl(d.it);
     void d.el.offsetWidth; d.el.style.transition='';
     d.ghost.remove(); d.el.classList.remove('lifted');
   } else flyBack(d.it, d.ghost);
@@ -1002,9 +1348,13 @@ window.addEventListener('pointerup', e=>{
 window.addEventListener('pointercancel', cancelDrag);
 itemsLayer.addEventListener('click', e=>{ // 鍵盤操作
   if(e.detail!==0) return; const el=e.target.closest('.item'); if(!el) return;
-  const it=byUid(el.dataset.uid); if(it) tapItem(it);
+  const it=byUid(el.dataset.uid); if(it) tapItem(it, true);
 });
-function cancelDrag(){ if(!drag) return; if(drag.ghost) drag.ghost.remove(); drag.el.classList.remove('lifted'); drag=null; binsEl.querySelectorAll('.bin').forEach(b=>b.classList.remove('hover')); }
+function cancelDrag(){
+  if(!drag) return; clearTimeout(drag.timer);
+  if(drag.ghost) drag.ghost.remove(); drag.el.classList.remove('lifted','holding'); drag=null;
+  binsEl.querySelectorAll('.bin').forEach(b=>b.classList.remove('hover'));
+}
 function binAt(x,y){
   for(const b of binsEl.querySelectorAll('.bin')){ const r=b.getBoundingClientRect(); if(x>=r.left-4&&x<=r.right+4&&y>=r.top-14&&y<=r.bottom+6) return b; }
   return null;
@@ -1018,7 +1368,7 @@ binsEl.addEventListener('click', e=>{
 
 function ghostFor(it){
   const r=it.el.getBoundingClientRect();
-  const g=it.el.cloneNode(true); g.className='item ghost'+(it.def.special==='net'?' big cut':'');
+  const g=it.el.cloneNode(true); g.className='item ghost'+(it.def.special==='net'?' big cut':'')+(it.frag?' frag':'');
   g.style.left=r.left+'px'; g.style.top=r.top+'px'; g.style.width=r.width+'px';
   document.body.appendChild(g); it.el.classList.add('lifted'); return g;
 }
@@ -1033,7 +1383,7 @@ function popAt(el, text, sub='', minus=false){
   p.innerHTML=text+(sub?`<small>${sub}</small>`:''); document.body.appendChild(p); setTimeout(()=>p.remove(),850);
 }
 
-function sendToBin(it, cat, g){
+function sendToBin(it, cat, g, opt={}){
   if(!S.items.includes(it)){ if(g) g.remove(); return; }
   g = g || ghostFor(it);
   const bin = binsEl.querySelector(`.bin[data-cat="${cat}"]`);
@@ -1051,12 +1401,17 @@ function sendToBin(it, cat, g){
     const a=g.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px,${dy}px) scale(.2)`,opacity:.3}],{duration:T(280),easing:'ease-in'});
     a.onfinish=()=>g.remove();
     removeItem(it);
-    setCombo(S.combo+1);
-    const pts = (def.special==='net'?200:100) + Math.min(S.combo-1,9)*15;
+    let pts;
+    if(opt.auto){ pts=50; S.stats.helped++; }
+    else {
+      setCombo(S.combo+1);
+      pts = (def.special==='net'?200: it.frag?40:100) + Math.min(S.combo-1,9)*15;
+    }
     setScore(S.score+pts); S.stats.correct++; S.stats.byCat[cat]++;
-    unlock(def.id); sfx.good(S.combo);
-    setTimeout(()=>{ bin.classList.remove('bump'); void bin.offsetWidth; bin.classList.add('bump'); popAt(bin,'+'+pts, S.combo>=2?`連續 ${S.combo}`:''); }, T(200));
-    if(def.cf && !S.seenCf.has(def.id)){ S.seenCf.add(def.id); toast(def.why,'good',3200,'答對了，這個很容易搞混'); }
+    unlock(def.id); sfx.good(opt.auto?1:S.combo);
+    setTimeout(()=>{ bin.classList.remove('bump'); void bin.offsetWidth; bin.classList.add('bump'); popAt(bin,'+'+pts, opt.auto?'志工':S.combo>=2?`連續 ${S.combo}`:''); }, T(200));
+    if(!opt.auto && def.cf && !S.seenCf.has(def.id)){ S.seenCf.add(def.id); toast(def.why,'good',3200,'答對了，這個很容易搞混'); }
+    if(!opt.auto && S.combo>0 && S.combo%5===0) spawnHelper();
     checkEarly();
   } else {
     S.stats.wrong++; setCombo(0); setScore(S.score-20); sfx.bad();
@@ -1069,9 +1424,15 @@ function sendToBin(it, cat, g){
   }
 }
 function removeItem(it){ S.items=S.items.filter(x=>x!==it); it.el.remove(); if(S.sel===it) clearSel(); }
+function loseItem(it){ // 被吹走、叼走、碎掉時的消失動畫
+  S.items=S.items.filter(x=>x!==it); if(S.sel===it) clearSel();
+  if(drag && drag.it===it) cancelDrag();
+  const el=it.el;
+  el.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-80%) scale(.4)'}],{duration:T(350),fill:'forwards'}).onfinish=()=>el.remove();
+}
 
 function checkEarly(){
-  if(S.waving||S.early) return;
+  if(S.waving||S.early||ST().bonus) return;
   const wasteLeft = S.items.some(i=>i.def.cat!=='natural');
   if(wasteLeft) return;
   S.early=true;
@@ -1079,6 +1440,25 @@ function checkEarly(){
   setScore(S.score+bonus);
   setTimeout(()=>toast(`垃圾都清完了，提早 ${secs} 秒 +${bonus}`,'good',1800,'乾淨！'), T(250));
   S.timeLeft=Math.min(S.timeLeft, 1.1);
+}
+
+/* ============ 保麗龍碎裂 ============ */
+function updateFoam(dt){
+  if(!ST().frag) return;
+  S.items.slice().forEach(it=>{
+    if(it.def.cat!=='foam' || it.frag || it.buried || (drag && drag.it===it)) return;
+    it.age+=dt;
+    if(it.age>5 && !it.cracking){ it.cracking=true; it.el.classList.add('cracking'); }
+    if(it.age>7.5) fragment(it);
+  });
+}
+function fragment(it){
+  loseItem(it); S.stats.frags++; sfx.dig();
+  for(let k=0;k<3;k++){
+    const a=k*2.1+rand(0,1);
+    addItem({def:ITEM_BY_ID.foam_bits, frag:true, fx:Math.min(.9,Math.max(.1,it.fx+Math.cos(a)*.1)), fy:Math.min(.88,Math.max(seaFrac()+.08,it.fy+Math.sin(a)*.07))}, k*60);
+  }
+  if(!S.fragTold){ S.fragTold=true; toast(`${it.def.name}碎成好幾塊了！保麗龍放越久碎越多，越難撿乾淨。`,'bad',3000,'碎掉了'); }
 }
 
 /* ============ 海龜 ============ */
@@ -1092,18 +1472,14 @@ function spawnTurtle(){
 function updateTurtle(dt){
   const tu=S.turtle; if(!tu) return;
   tu.t+=dt; const p=Math.min(1,tu.t/tu.dur);
-  const seaFrac=parseFloat(field.style.getPropertyValue('--sea-h'))/100||.17;
-  const fy=.97-(.97-seaFrac)*p, fx=tu.x0+Math.sin(p*Math.PI*2)*.05;
+  const fy=.97-(.97-seaFrac())*p, fx=tu.x0+Math.sin(p*Math.PI*2)*.05;
   tu.el.style.left=(fx*100)+'%'; tu.el.style.top=(fy*100)+'%';
   const tx=fx*fw, ty=fy*fh;
-  S.items.forEach(it=>{
-    if(!it.def.td || it.buried){ return; }
+  S.items.slice().forEach(it=>{
+    if(!it.def.td || it.buried) return;
     const d=Math.hypot(it.fx*fw-tx, it.fy*fh-ty);
     it.el.classList.toggle('danger', d<125);
-    if(d<46){
-      tu.hazard[it.uid]=(tu.hazard[it.uid]||0)+dt;
-      if(tu.hazard[it.uid]>.6) eaten(it);
-    }
+    if(d<46){ tu.hazard[it.uid]=(tu.hazard[it.uid]||0)+dt; if(tu.hazard[it.uid]>.6) eaten(it); }
   });
   if(p>=1){
     S.items.forEach(it=>it.el.classList.remove('danger'));
@@ -1113,13 +1489,184 @@ function updateTurtle(dt){
 }
 function eaten(it){
   const tu=S.turtle; tu.hurt=true; tu.el.classList.add('hurt');
-  const a=it.el.animate([{opacity:1,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:'translate(-50%,-50%) scale(.2)'}],{duration:T(300)});
-  S.items=S.items.filter(x=>x!==it); if(S.sel===it) clearSel();
-  a.onfinish=()=>it.el.remove();
+  loseItem(it);
   const loss = it.def.special==='net'?18:12;
   setHP(S.hp-loss); setCombo(0); S.stats.turtleHurt++; sfx.hurt();
-  toast(`海龜被${it.def.name}${it.def.cat==='fishing'||it.def.id==='six_ring'||it.def.id==='mask'?'纏住':'誤食'}了，海洋健康 −${loss}。${it.def.fact}`,'bad',3400,'海龜受傷了');
+  const tangle = ['fishing'].includes(it.def.cat) || ['six_ring','mask','strap','balloon'].includes(it.def.id);
+  toast(`海龜被${it.def.name}${tangle?'纏住':'誤食'}了，海洋健康 −${loss}。${it.def.fact}`,'bad',3400,'海龜受傷了');
   if(S.hp<=0) endByHP(); else checkEarly();
+}
+
+/* ============ 寄居蟹 ============ */
+function spawnCrab(){
+  const dir = Math.random()<.5?1:-1;
+  const el=document.createElement('button'); el.className='crab'; el.setAttribute('aria-label','背著瓶蓋的寄居蟹');
+  el.innerHTML=`<div class="flipper" style="transform:scaleX(${dir>0?-1:1})"><div class="inner">${crabSvg('bottle_cap')}</div></div>`;
+  el.onclick=()=>{ if(S.sel && S.sel.def.home && S.crab && !S.crab.swapped){ const it=S.sel; clearSel(); swapCrab(it,null); } else toast('把螺殼拖給寄居蟹，牠就會換殼。','info',2000); };
+  itemsLayer.appendChild(el);
+  S.crab={el, dir, fy:rand(.55,.8), t:0, dur:S.interval*.88, swapped:false};
+  toast('這隻寄居蟹背著瓶蓋當家，找個螺殼給牠換吧！','info',2600,'寄居蟹');
+}
+function crabPos(c){ const p=Math.min(1,c.t/c.dur); return {fx: c.dir>0 ? -.08+1.16*p : 1.08-1.16*p, fy:c.fy}; }
+function updateCrab(dt){
+  const c=S.crab; if(!c) return;
+  c.t+=dt*(c.swapped?1.6:1);
+  const p=crabPos(c); c.el.style.left=(p.fx*100)+'%'; c.el.style.top=(p.fy*100)+'%';
+  if(c.t>=c.dur){
+    if(!c.swapped){ S.stats.crabMiss++; toast('寄居蟹背著瓶蓋離開了。','info',1800); }
+    c.el.remove(); S.crab=null;
+  }
+}
+function nearCrab(x,y){
+  if(!S.crab) return false; const r=S.crab.el.getBoundingClientRect();
+  return Math.hypot(x-(r.left+r.width/2), y-(r.top+r.height/2)) < 64;
+}
+function swapCrab(it, g){
+  if(g) g.remove();
+  const c=S.crab; if(!c||c.swapped){ return; }
+  S.items=S.items.filter(x=>x!==it); it.el.remove();
+  unlock(it.def.id); c.swapped=true; S.stats.crabSwap++;
+  c.el.querySelector('.inner').innerHTML=crabSvg(it.def.id);
+  c.el.setAttribute('aria-label','換上新殼的寄居蟹');
+  const p=crabPos(c);
+  addItem({def:ITEM_BY_ID.bottle_cap, fx:Math.min(.9,Math.max(.1,p.fx)), fy:Math.min(.88,p.fy+.08)});
+  setScore(S.score+60); sfx.yay(); popAt(c.el,'+60','換殼成功');
+  toast('寄居蟹換上新家了！把牠留下的瓶蓋撿起來吧。','good',2600,'換殼成功');
+}
+
+/* ============ 海鳥 ============ */
+function updateGull(dt){
+  if(!S.gull){
+    if(S.gullBudget<=0) return;
+    S.gullNext-=dt;
+    if(S.gullNext>0 || S.timeLeft<3.4) return;
+    const cand=S.items.filter(i=>i.def.bird && !i.buried && !(drag&&drag.it===i));
+    if(!cand.length){ S.gullNext=1; return; }
+    const it=pick(cand);
+    const sh=document.createElement('div'); sh.className='gull-shadow';
+    itemsLayer.appendChild(sh);
+    S.gull={it, shadow:sh, t:0, striking:false}; it.el.classList.add('danger');
+    S.gullBudget--; S.gullNext=rand(2.5,4);
+    toast(`海鳥盯上了${it.def.name}！趕快收掉影子下的東西。`,'info',2200,'有海鳥');
+    return;
+  }
+  const g=S.gull;
+  g.t+=dt;
+  if(!S.items.includes(g.it)){
+    if(!g.striking){ S.stats.gullSaved++; setScore(S.score+30); toast('海鳥撲空了 +30','good',1600); }
+    g.shadow.remove(); S.gull=null; return;
+  }
+  g.shadow.style.left=(g.it.fx*100)+'%'; g.shadow.style.top=(g.it.fy*100+3)+'%';
+  g.shadow.style.transform=`translate(-50%,-50%) scale(${.7+Math.min(1,g.t/2.4)*.7})`;
+  if(g.t>=2.4 && !g.striking){
+    g.striking=true;
+    const bird=document.createElement('div'); bird.className='gull'; bird.innerHTML=GULL_SVG;
+    bird.style.left=(g.it.fx*100)+'%'; bird.style.top=(g.it.fy*100)+'%';
+    itemsLayer.appendChild(bird); g.bird=bird;
+    const dx=g.it.fx<.5?1:-1;
+    bird.animate([
+      {transform:`translate(calc(-50% + ${-dx*220}px),calc(-50% - 260px)) scale(.8)`},
+      {transform:'translate(-50%,-50%) scale(1.1)', offset:.45},
+      {transform:`translate(calc(-50% + ${dx*260}px),calc(-50% - 320px)) scale(.7)`}
+    ],{duration:T(950),easing:'ease-in-out',fill:'forwards'});
+    const gid=S.gid, target=g.it;
+    setTimeout(()=>{
+      if(S.gid!==gid || !S.gull || S.gull.it!==target) return;
+      if(S.items.includes(target)){
+        loseItem(target); S.stats.gullLost++; setHP(S.hp-8); setCombo(0); sfx.hurt();
+        toast(`海鳥把${target.def.name}叼走了，海洋健康 −8。${target.def.fact}`,'bad',3200,'被叼走了');
+        if(S.hp<=0) endByHP();
+      } else { S.stats.gullSaved++; setScore(S.score+30); toast('海鳥撲空了 +30','good',1600); }
+      S.gull.shadow.remove();
+    }, T(430));
+    setTimeout(()=>{ if(S.gid!==gid) return; bird.remove(); if(S.gull && S.gull.it===target) S.gull=null; }, T(980));
+  }
+}
+
+/* ============ 東北季風 ============ */
+function updateWind(dt){
+  const st=ST();
+  if(!S.wind){
+    if(!st.wind || !st.wind.includes(S.wave) || S.windDone || S.timeLeft > S.interval*.62) return;
+    S.windDone=true;
+    const dir=Math.random()<.5?1:-1;
+    const el=document.createElement('div'); el.className='wind-fx'+(dir<0?' left':'');
+    field.appendChild(el);
+    S.wind={t:0, dur:3, dir, el};
+    toast('東北季風吹起來了！輕的垃圾正被吹向海邊。','bad',2600,'起風了');
+    return;
+  }
+  const w=S.wind; w.t+=dt;
+  const sea=seaFrac();
+  S.items.slice().forEach(it=>{
+    if(!it.def.light || it.buried || (drag&&drag.it===it)) return;
+    it.el.classList.add('blown');
+    it.fy -= .09*dt; it.fx = Math.min(.94,Math.max(.06, it.fx + w.dir*.04*dt));
+    posEl(it);
+    if(it.fy < sea+.03){
+      loseItem(it); S.stats.swept++; setHP(S.hp-6); setCombo(0); sfx.bad();
+      toast(`${it.def.name}被風吹進海裡了，海洋健康 −6。輕的塑膠很容易被風帶走。`,'bad',2800,'被吹走了');
+      if(S.hp<=0) endByHP();
+    }
+  });
+  if(w.t>=w.dur){ w.el.remove(); S.wind=null; S.items.forEach(it=>it.el.classList.remove('blown')); }
+}
+
+/* ============ 志工 ============ */
+function spawnHelper(){
+  const cand=S.items.filter(i=>i.def.cat!=='natural' && canDrag(i) && !i.helperTarget && !(drag&&drag.it===i));
+  if(!cand.length){ S.helperPending=true; return; }
+  const it=pick(cand); it.helperTarget=true;
+  const el=document.createElement('div'); el.className='volunteer';
+  el.innerHTML=`<div class="bob">${VOLUNTEER_SVG}</div>`;
+  el.style.left=(it.fx*100)+'%'; el.style.top='112%';
+  itemsLayer.appendChild(el);
+  toast(`連續 ${S.combo} 次！志工來幫忙撿${it.def.name}。`,'good',2000,'志工來了');
+  const gid=S.gid;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.left=(it.fx*100)+'%'; el.style.top=Math.min(92,it.fy*100+9)+'%'; }));
+  setTimeout(()=>{
+    if(S.gid!==gid) return;
+    if(S.items.includes(it) && !S.waving){ if(drag && drag.it===it) cancelDrag(); sendToBin(it, it.def.cat, null, {auto:true}); }
+    el.style.top='115%';
+    setTimeout(()=>el.remove(), T(950));
+  }, T(1000));
+}
+
+/* ============ 小海龜（獎勵關） ============ */
+function startHatch(){
+  const n=document.createElement('div'); n.className='nest'; n.innerHTML=NEST_SVG;
+  n.style.left='50%'; n.style.top='94%'; itemsLayer.appendChild(n); S.nest=n;
+  S.hatchSpawned=0; S.hatchTimer=.4; S.hatchDoneFlag=false; S.stats.hatchTotal+=ST().hatch;
+}
+function updateHatch(dt){
+  const st=ST(); if(!st.bonus) return;
+  S.hatchTimer-=dt;
+  if(S.hatchTimer<=0 && S.hatchSpawned<st.hatch){
+    S.hatchTimer=1.6; S.hatchSpawned++;
+    const el=document.createElement('div'); el.className='hatch'; el.innerHTML=`<div class="wiggle">${HATCH_SVG}</div>`;
+    itemsLayer.appendChild(el);
+    S.hatch.push({el, fx:.5+rand(-.05,.05), fy:.92, drift:rand(-.04,.04), stuck:0, state:'go'});
+  }
+  const sea=seaFrac();
+  S.hatch.forEach(h=>{
+    if(h.state==='saved'||h.state==='lost') return;
+    const hx=h.fx*fw, hy=h.fy*fh;
+    const block=S.items.some(it=>it.def.cat!=='natural' && !(drag&&drag.it===it) && Math.hypot(it.fx*fw-hx,(it.fy*fh)-(hy-14))<36);
+    if(block){
+      h.state='stuck'; h.stuck+=dt; h.el.classList.add('stuck');
+      if(h.stuck>2.4){ h.state='lost'; S.stats.hatchLost++; h.el.animate([{opacity:1},{opacity:0}],{duration:T(400),fill:'forwards'}); toast('一隻小海龜被垃圾擋住，回不了海了。','bad',1800); }
+    } else {
+      h.state='go'; h.stuck=Math.max(0,h.stuck-dt); h.el.classList.remove('stuck');
+      h.fy-=.09*dt; h.fx+=h.drift*dt; if(h.fx<.1||h.fx>.9) h.drift*=-1;
+      if(h.fy<sea+.01){ h.state='saved'; S.stats.hatchSaved++; setScore(S.score+100); sfx.good(4); h.el.animate([{opacity:1},{opacity:0}],{duration:T(400),fill:'forwards'}); }
+    }
+    h.el.style.left=(h.fx*100)+'%'; h.el.style.top=(h.fy*100)+'%';
+  });
+  if(!S.hatchDoneFlag && S.hatchSpawned>=st.hatch && S.hatch.every(h=>h.state==='saved'||h.state==='lost')){
+    S.hatchDoneFlag=true; S.timeLeft=Math.min(S.timeLeft,1);
+    S.hatch.forEach(h=>setTimeout(()=>h.el.remove(),500)); S.hatch=[]; // 已結算，避免浪來時重複計算
+    S.hatchSpawned=st.hatch;
+  }
 }
 
 /* ============ 主迴圈 ============ */
@@ -1130,8 +1677,8 @@ function loop(now){
     measure();
     S.timeLeft-=dt;
     setTide(Math.max(0,S.timeLeft/S.interval));
-    updateTurtle(dt);
-    if(S.timeLeft<=0 && S.hp>0) runWave(false);
+    updateFoam(dt); updateTurtle(dt); updateCrab(dt); updateGull(dt); updateWind(dt); updateHatch(dt);
+    if(S.running && S.timeLeft<=0 && S.hp>0) runWave(false);
   }
   requestAnimationFrame(loop);
 }
@@ -1142,19 +1689,19 @@ function setTide(frac){
 }
 
 /* ============ 結束 ============ */
-function endByHP(){ if(!S.running) return; S.running=false; cancelDrag(); setTimeout(()=>finish(false), T(700)); }
+function endByHP(){ if(!S.running) return; S.running=false; cancelDrag(); const gid=S.gid; setTimeout(()=>{ if(S.gid===gid) finish(false); }, T(700)); }
 function stageDone(){
   S.running=false;
   if(S.stage>=STAGES.length-1){ finish(true); return; }
   const bonus=Math.round(S.hp)*2; setScore(S.score+bonus); sfx.yay();
-  openCard('intro', `<h2>${STAGES[S.stage].name}結束</h2><p class="sub">海洋健康 ${Math.round(S.hp)}，加 ${bonus} 分。</p>` + INTRO[S.stage+1]() + `<div class="actions"><button class="btn primary" id="goBtn">開始${STAGES[S.stage+1].name}</button></div>`);
   const next=S.stage+1;
+  openCard('intro', `<h2>${STAGES[S.stage].name}結束</h2><p class="sub">海洋健康 ${Math.round(S.hp)}，加 ${bonus} 分。</p><hr style="border:0;border-top:2px dashed var(--paper-2);margin:12px 0">` + INTRO[next]() + `<div class="actions"><button class="btn primary" id="goBtn">開始${STAGES[next].name}</button></div>`);
   $('#goBtn').onclick=()=>{ closeCard('intro'); S.stage=next; S.wave=0; S.interval=STAGES[next].interval; S.timeLeft=S.interval; renderBins(); updateWhere(); S.running=true; runWave(true); };
   $('#goBtn').focus();
 }
+const frac = (a,b) => b ? `${a}/${b}` : '—';
 function finish(cleared){
-  S.running=false; cancelDrag();
-  if(S.turtle){ S.turtle.el.remove(); S.turtle=null; }
+  S.running=false; cancelDrag(); clearEvents();
   if(cleared){ const b=Math.round(S.hp)*10; setScore(S.score+b); S.hpBonus=b; }
   const best=store.get('tideBest',0), isNew=S.score>best; if(isNew) store.set('tideBest',S.score);
   const st=S.stats, total=st.correct;
@@ -1164,21 +1711,28 @@ function finish(cleared){
   const bars=wasteCats.map(c=>`<div class="ln"><span>${CATS[c].name}</span><div><i style="width:${st.byCat[c]/maxN*100}%;background:${CATS[c].color}"></i></div><em>${st.byCat[c]}</em></div>`).join('');
   const line = total ? `你清出 ${total} 件垃圾，最多的是${CATS[topCat].name}類（${st.byCat[topCat]} 件）。` : '這次還沒清到垃圾，再試一次吧。';
   const lesson = st.natBinned ? '有自然物被丟進桶子了。淨灘時，貝殼、海藻、浮木這些留在原地就好。'
+    : st.hurtSharp ? '有人被割傷了。真實淨灘時，碎玻璃、鐵釘、針筒一定要用夾子或戴手套撿。'
     : st.turtleHurt ? '海龜受傷了。塑膠袋、釣線和漁繩對海龜最危險，看到要優先撿。'
+    : st.gullLost ? '海鳥叼走了小塑膠。瓶蓋、打火機這類小東西，常被海鳥誤當食物。'
+    : st.frags>2 ? '好幾塊保麗龍碎掉了。保麗龍在海邊放越久碎越多，最後變成撿不完的微塑膠。'
     : st.swept>3 ? '有不少垃圾被浪捲回海裡。真實的海岸也是這樣：垃圾留在沙灘上越久，越可能再回到海中。'
     : '做得很好！減少一次性用品，就是讓沙灘少一點垃圾最直接的方法。';
   sfx[cleared?'yay':'hurt']();
+  const lastSt = STAGES[Math.min(S.stage, STAGES.length-1)];
   openCard('result', `<h2>${cleared?'淨灘完成':'海洋撐不住了'}</h2>
-    <p class="sub">${cleared?`三潮都守住了，剩餘健康 ${Math.round(S.hp)}，加 ${S.hpBonus} 分。`:`在${STAGES[S.stage].name}第 ${Math.min(S.wave+1,STAGES[S.stage].waves)} 波時，海洋健康歸零。`}</p>
+    <p class="sub">${cleared?`三潮都守住了，剩餘健康 ${Math.round(S.hp)}，加 ${S.hpBonus} 分。`:`在${lastSt.name}第 ${Math.min(S.wave+1,lastSt.waves)} 波時，海洋健康歸零。`}</p>
     <div class="big-score">${S.score}</div>
     <div class="best ${isNew?'new':''}">${isNew?'新紀錄！':'最佳紀錄 '+best+' 分'}</div>
     <div class="stats">
       <div><b>${st.correct}</b><span>分類正確</span></div>
       <div><b>${st.wrong}</b><span>分錯</span></div>
       <div><b>${S.maxCombo}</b><span>最高連續</span></div>
-      <div><b>${st.swept}</b><span>被浪捲走</span></div>
+      <div><b>${st.swept}</b><span>流回海裡</span></div>
       <div><b>${st.kept}</b><span>保留自然物</span></div>
-      <div><b>${st.turtleSafe+st.turtleHurt?st.turtleSafe+'/'+(st.turtleSafe+st.turtleHurt):'—'}</b><span>海龜平安</span></div>
+      <div><b>${frac(st.turtleSafe, st.turtleSafe+st.turtleHurt)}</b><span>海龜平安</span></div>
+      <div><b>${frac(st.gullSaved, st.gullSaved+st.gullLost)}</b><span>海鳥撲空</span></div>
+      <div><b>${frac(st.crabSwap, st.crabSwap+st.crabMiss)}</b><span>寄居蟹換殼</span></div>
+      <div><b>${frac(st.hatchSaved, st.hatchTotal)}</b><span>小海龜入海</span></div>
     </div>
     <p>${line}</p>
     <div class="breakdown">${bars}</div>
@@ -1190,7 +1744,8 @@ function finish(cleared){
   $('#homeBtn').onclick=()=>{ closeCard('result'); goHome(); };
   $('#againBtn').focus();
 }
-function goHome(){ if(S){ S.running=false; } cancelDrag(); itemsLayer.innerHTML=''; updateDexCount(); showScreen('start'); }
+function goHome(){ if(S){ S.running=false; S.gid=-1; } cancelDrag(); itemsLayer.innerHTML=''; field.querySelectorAll('.wind-fx').forEach(e=>e.remove()); updateDexCount(); showScreen('start'); }
+
 
 /* ============ 提示 ============ */
 function toast(msg, type='info', ms=2600, title=''){
